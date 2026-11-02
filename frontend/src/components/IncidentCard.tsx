@@ -1,7 +1,8 @@
 // frontend/src/components/IncidentCard.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { 
   Bug, 
   Sparkles, 
@@ -22,7 +23,8 @@ import {
   Crosshair,
   Maximize2,
   Terminal,
-  ShieldAlert
+  ShieldAlert,
+  X
 } from "lucide-react";
 import { DiffViewer } from "./DiffViewer";
 import { Language, translations } from "./i18n";
@@ -72,6 +74,22 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
   const [retryWithBackend, setRetryWithBackend] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showInspectorOverlay, setShowInspectorOverlay] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (showScreenshotModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showScreenshotModal]);
 
   const t = translations[lang] || translations.uz;
 
@@ -452,113 +470,134 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
         </div>
       </div>
 
-      {/* Enlarged Screenshot & Defect Inspector Modal */}
-      {showScreenshotModal && (
+      {/* Enlarged Screenshot & Defect Inspector Modal (Portaled directly to document.body) */}
+      {mounted && showScreenshotModal && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
+          className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-md overflow-y-auto p-2 sm:p-4 md:p-6 flex flex-col items-center justify-start sm:justify-center animate-fadeIn"
           onClick={() => setShowScreenshotModal(false)}
         >
           <div
-            className="max-w-5xl w-full bg-[#0b101d] border border-sentinel-cyan/40 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+            className="max-w-5xl w-full bg-[#0b101d] border border-sentinel-cyan/40 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col my-auto max-h-[96vh] sm:max-h-[92vh] shrink-0"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header & Toolbar */}
-            <div className="p-4 bg-[#080d18] border-b border-sentinel-border flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center">
-                  <ShieldAlert className="w-4 h-4 text-red-400" />
+            {/* Modal Header & Toolbar (Compact, Responsive, Sticky) */}
+            <div className="p-3 sm:p-4 bg-[#080d18] border-b border-sentinel-border flex flex-col gap-2.5 shrink-0">
+              {/* Row 1: Title, Bug Type Badge, and High-Visibility Close Button */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center shrink-0">
+                    <ShieldAlert className="w-4 h-4 text-red-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-mono text-xs sm:text-sm font-bold text-white tracking-wide truncate">
+                        XATOLIK SKRINSHOT INSPEKTORI
+                      </h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-sentinel-card border border-sentinel-border text-sentinel-cyan font-mono font-semibold shrink-0">
+                        {incident.bug_type}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-mono text-xs font-bold text-white flex items-center gap-2">
-                    <span>XATOLIK SKRINSHOT INSPEKTORI</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-sentinel-card border border-sentinel-border text-sentinel-cyan">
-                      {incident.bug_type}
-                    </span>
-                  </h3>
-                  <p className="text-[10px] font-mono text-gray-400 truncate max-w-xs sm:max-w-md">
-                    Selector: {incident.selector || "DOM Viewport Crash"}
-                  </p>
-                </div>
-              </div>
 
-              {/* Inspector Controls */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {/* Zoom In */}
-                <button
-                  onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 2.5))}
-                  className="p-1.5 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white hover:bg-sentinel-border"
-                  title="Kattalashtirish (+)"
-                >
-                  <ZoomIn className="w-3.5 h-3.5" />
-                </button>
-                {/* Zoom Out */}
-                <button
-                  onClick={() => setZoomLevel((z) => Math.max(z - 0.25, 0.75))}
-                  className="p-1.5 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white hover:bg-sentinel-border"
-                  title="Kichraytirish (-)"
-                >
-                  <ZoomOut className="w-3.5 h-3.5" />
-                </button>
-                {/* Reset Zoom */}
-                <button
-                  onClick={() => setZoomLevel(1)}
-                  className="p-1.5 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white hover:bg-sentinel-border font-mono text-[10px] px-2"
-                  title="Asliga qaytarish"
-                >
-                  {Math.round(zoomLevel * 100)}%
-                </button>
-                {/* Inspector Overlay Toggle */}
-                <button
-                  onClick={() => setShowInspectorOverlay(!showInspectorOverlay)}
-                  className={`px-2.5 py-1 rounded-lg border font-mono text-[10px] flex items-center gap-1 transition-all ${
-                    showInspectorOverlay 
-                      ? "bg-red-500/20 border-red-500/50 text-red-300"
-                      : "bg-sentinel-card border-sentinel-border text-gray-400"
-                  }`}
-                >
-                  <Crosshair className="w-3 h-3" />
-                  <span>Crash Locus</span>
-                </button>
-                {/* Download */}
-                <button
-                  onClick={downloadScreenshot}
-                  className="p-1.5 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white hover:bg-sentinel-border"
-                  title="Skrinshotni yuklab olish (.png)"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                </button>
-                {/* Close */}
+                {/* Primary Red Close Button (Always visible top right) */}
                 <button
                   onClick={() => setShowScreenshotModal(false)}
-                  className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 ml-2"
+                  className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/30 border border-red-500/40 text-red-300 hover:text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-sm active:scale-95"
+                  title="Yopish (Esc)"
                 >
-                  ✕ Yopish
+                  <X className="w-4 h-4" />
+                  <span className="text-[11px] sm:text-xs">✕ Yopish</span>
                 </button>
+              </div>
+
+              {/* Row 2: Target Selector & Inspector Action Controls */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-800/60">
+                {/* Selector / Target path info */}
+                <div className="flex items-center gap-1.5 text-[11px] font-mono text-gray-400 min-w-0 truncate max-w-full sm:max-w-md">
+                  <span className="text-gray-500 shrink-0">Selector:</span>
+                  <code className="text-sentinel-cyan bg-black/60 px-1.5 py-0.5 rounded border border-gray-800 truncate text-[10px] sm:text-[11px]">
+                    {incident.selector || "DOM Viewport Crash"}
+                  </code>
+                </div>
+
+                {/* Inspector Controls Toolbar */}
+                <div className="flex items-center gap-1.5 flex-wrap ml-auto">
+                  {/* Zoom Out */}
+                  <button
+                    onClick={() => setZoomLevel((z) => Math.max(z - 0.25, 0.5))}
+                    className="p-1 sm:p-1.5 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white hover:bg-sentinel-border transition-colors cursor-pointer"
+                    title="Kichraytirish (-)"
+                  >
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Zoom Percentage / Reset */}
+                  <button
+                    onClick={() => setZoomLevel(1)}
+                    className="px-2 py-1 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white hover:bg-sentinel-border font-mono text-[10px] sm:text-xs transition-colors cursor-pointer"
+                    title="Asliga qaytarish (100%)"
+                  >
+                    {Math.round(zoomLevel * 100)}%
+                  </button>
+
+                  {/* Zoom In */}
+                  <button
+                    onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 3))}
+                    className="p-1 sm:p-1.5 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white hover:bg-sentinel-border transition-colors cursor-pointer"
+                    title="Kattalashtirish (+)"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Crash Locus Overlay Toggle */}
+                  <button
+                    onClick={() => setShowInspectorOverlay(!showInspectorOverlay)}
+                    className={`px-2 py-1 rounded-lg border font-mono text-[10px] sm:text-xs flex items-center gap-1 transition-all cursor-pointer ${
+                      showInspectorOverlay 
+                        ? "bg-red-500/20 border-red-500/50 text-red-300 shadow-sm shadow-red-500/20"
+                        : "bg-sentinel-card border-sentinel-border text-gray-400 hover:text-gray-200"
+                    }`}
+                    title="Defekt lokatsiyasi to'sig'ini ko'rsatish/yashirish"
+                  >
+                    <Crosshair className="w-3 h-3 text-red-400" />
+                    <span>Crash Locus</span>
+                  </button>
+
+                  {/* Download Screenshot */}
+                  <button
+                    onClick={downloadScreenshot}
+                    className="p-1 sm:p-1.5 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white hover:bg-sentinel-border transition-colors cursor-pointer"
+                    title="Skrinshotni yuklab olish (.png)"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Modal Body: Interactive Zoomable Image or Blueprint */}
-            <div className="flex-1 overflow-auto bg-black p-4 flex items-center justify-center relative min-h-[360px] max-h-[70vh]">
+            <div className="flex-1 overflow-auto bg-[#040711] p-2 sm:p-4 flex items-center justify-center relative min-h-[180px] max-h-[58vh] sm:max-h-[66vh]">
               {!imgLoadFailed && incident.screenshot_url ? (
                 <div 
-                  className="relative transition-transform duration-200"
-                  style={{ transform: `scale(${zoomLevel})` }}
+                  className="relative transition-transform duration-200 max-w-full flex items-center justify-center"
+                  style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center center" }}
                 >
                   <img
                     src={getScreenshotSrc()}
                     alt="Crash Viewport Capture"
                     onError={handleImageError}
-                    className="max-h-[65vh] object-contain rounded-xl border border-gray-800 shadow-2xl"
+                    className="max-h-[50vh] sm:max-h-[60vh] max-w-full w-auto object-contain rounded-lg sm:rounded-xl border border-gray-800 shadow-2xl"
                   />
 
                   {/* Red-line Defect Bounding Box Overlay */}
                   {showInspectorOverlay && (
-                    <div className="absolute inset-x-8 bottom-12 border-2 border-dashed border-red-500 bg-red-500/15 rounded-lg p-2 flex items-center justify-between pointer-events-none animate-pulse">
-                      <div className="bg-red-950/90 border border-red-500 px-2 py-0.5 rounded text-[10px] font-mono text-white flex items-center gap-1 shadow-lg">
+                    <div className="absolute inset-x-4 sm:inset-x-8 bottom-6 sm:bottom-10 border-2 border-dashed border-red-500 bg-red-500/15 rounded-lg p-2 flex items-center justify-between pointer-events-none animate-pulse">
+                      <div className="bg-red-950/90 border border-red-500 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-mono text-white flex items-center gap-1 shadow-lg">
                         <Crosshair className="w-3 h-3 text-red-400" />
-                        <span>CRASH SELECTOR: {incident.selector || "Target Element"}</span>
+                        <span className="truncate max-w-[180px] sm:max-w-none">CRASH SELECTOR: {incident.selector || "Target Element"}</span>
                       </div>
-                      <span className="text-[10px] font-mono text-red-200 bg-black/70 px-2 py-0.5 rounded">
+                      <span className="text-[9px] sm:text-[10px] font-mono text-red-200 bg-black/70 px-2 py-0.5 rounded">
                         Defect: {incident.bug_type}
                       </span>
                     </div>
@@ -566,22 +605,22 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                 </div>
               ) : (
                 /* Sleek Blueprint Fallback Canvas */
-                <div className="w-full max-w-2xl bg-gradient-to-b from-[#0e172a] to-[#070b14] border border-sentinel-cyan/40 rounded-2xl p-6 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-2xl bg-red-500/15 border border-red-500/40 mx-auto flex items-center justify-center">
-                    <Crosshair className="w-8 h-8 text-red-400 animate-spin" />
+                <div className="w-full max-w-2xl bg-gradient-to-b from-[#0e172a] to-[#070b14] border border-sentinel-cyan/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center space-y-3 sm:space-y-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-red-500/15 border border-red-500/40 mx-auto flex items-center justify-center">
+                    <Crosshair className="w-6 h-6 sm:w-8 sm:h-8 text-red-400 animate-spin" />
                   </div>
                   <div>
-                    <h4 className="font-mono text-sm font-bold text-white">
+                    <h4 className="font-mono text-xs sm:text-sm font-bold text-white">
                       DOM VIEWPORT DIAGNOSTIC BLUEPRINT
                     </h4>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-[11px] sm:text-xs text-gray-400 mt-1 line-clamp-2">
                       {incident.message}
                     </p>
                   </div>
-                  <div className="bg-black/60 border border-gray-800 p-4 rounded-xl text-left font-mono text-xs text-gray-300 space-y-2">
+                  <div className="bg-black/60 border border-gray-800 p-3 sm:p-4 rounded-xl text-left font-mono text-[11px] sm:text-xs text-gray-300 space-y-2">
                     <div className="flex justify-between border-b border-gray-800 pb-1">
                       <span className="text-gray-500">Target Selector:</span>
-                      <span className="text-sentinel-cyan">{incident.selector || "body"}</span>
+                      <span className="text-sentinel-cyan truncate max-w-[200px]">{incident.selector || "body"}</span>
                     </div>
                     <div className="flex justify-between border-b border-gray-800 pb-1">
                       <span className="text-gray-500">Severity Level:</span>
@@ -594,7 +633,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                     {incident.target_file && (
                       <div className="flex justify-between">
                         <span className="text-gray-500">File:</span>
-                        <span className="text-amber-400">{incident.target_file}</span>
+                        <span className="text-amber-400 truncate max-w-[200px]">{incident.target_file}</span>
                       </div>
                     )}
                   </div>
@@ -602,13 +641,14 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
               )}
             </div>
 
-            {/* Modal Footer */}
-            <div className="p-3 bg-[#080d18] border-t border-sentinel-border flex items-center justify-between text-[11px] font-mono text-gray-400">
-              <span>Ghost-QA Sentinel • Headless Playwright Chromium Capture</span>
-              <span className="text-sentinel-cyan">AI Self-Healing Engine Active</span>
+            {/* Modal Footer (Compact, single-line) */}
+            <div className="px-3 py-2 sm:px-4 sm:py-2.5 bg-[#080d18] border-t border-sentinel-border flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-gray-400 shrink-0">
+              <span className="truncate">Ghost-QA Sentinel • Playwright Capture</span>
+              <span className="text-sentinel-cyan shrink-0 ml-2">AI Self-Healing Engine Active</span>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
