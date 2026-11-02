@@ -16,7 +16,8 @@ import {
   Check, 
   Copy,
   ChevronDown,
-  MessageSquare
+  MessageSquare,
+  EyeOff
 } from "lucide-react";
 import { Language, translations } from "./i18n";
 import { soundFX } from "./SoundEffects";
@@ -32,11 +33,25 @@ interface Message {
 interface SentinelCopilotProps {
   backendUrl: string;
   lang: Language;
+  isOpen?: boolean;
+  onToggleOpen?: (open: boolean) => void;
 }
 
-export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({ backendUrl, lang }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({ 
+  backendUrl, 
+  lang,
+  isOpen: externalIsOpen,
+  onToggleOpen: externalOnToggleOpen
+}) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = (val: boolean) => {
+    if (externalOnToggleOpen) externalOnToggleOpen(val);
+    else setInternalIsOpen(val);
+  };
+
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false); // User can hide floating button on mobile
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -67,7 +82,7 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({ backendUrl, la
 
   const quickPrompts = [
     {
-      label: lang === "uz" ? "🧪 Playwright Test Yaratish" : lang === "ru" ? "🧪 Создать Playwright Тест" : "🧪 Generate Playwright Test",
+      label: lang === "uz" ? "🧪 Playwright Test" : lang === "ru" ? "🧪 Playwright Тест" : "🧪 Playwright Test",
       prompt: "Qanday qilib bu xatolikka qarshi Playwright regressiya testi yozish mumkin?"
     },
     {
@@ -75,11 +90,11 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({ backendUrl, la
       prompt: "TypeError: Cannot read properties of undefined (reading 'pricing') xatosi nega chiqadi va uni qanday oldini olish kerak?"
     },
     {
-      label: lang === "uz" ? "🛡️ Xavfsizlik Auditi" : lang === "ru" ? "🛡️ Аудит Безопасности" : "🛡️ OWASP Security Audit",
+      label: lang === "uz" ? "🛡️ Xavfsizlik Auditi" : lang === "ru" ? "🛡️ Безопасность" : "🛡️ OWASP Audit",
       prompt: "Ghost-QA crawler qanday xavfsizlik va SSRF himoyalariga ega?"
     },
     {
-      label: lang === "uz" ? "⚡ Rust Tezligi" : lang === "ru" ? "⚡ Скорость на Rust" : "⚡ Rust Acceleration",
+      label: lang === "uz" ? "⚡ Rust Tezligi" : lang === "ru" ? "⚡ Скорость Rust" : "⚡ Rust Speed",
       prompt: "Rust dasturlash tili ushbu arxitekturada qanday ustunliklar bera oladi?"
     }
   ];
@@ -106,7 +121,7 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({ backendUrl, la
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: userMsg.text,
-          context: `User UI Language: ${lang}. Current platform: Ghost-QA Sentinel v2.0.`
+          context: `User UI Language: ${lang}. Current platform: Ghost-QA Sentinel v2.2.`
         })
       });
 
@@ -122,6 +137,7 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({ backendUrl, la
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
+        setIsLoading(false);
         return;
       }
     } catch (e) {
@@ -146,7 +162,6 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({ backendUrl, la
           "test('Checkout pricing null-safety guard', async ({ page }) => {\n" +
           "  await page.goto('/sandbox');\n" +
           "  await page.click('#checkout-btn');\n" +
-          "  // Assert that cart handles undefined pricing safely\n" +
           "  const errors = await page.locator('.log-error').count();\n" +
           "  expect(errors).toBe(0);\n" +
           "});\n" +
@@ -180,167 +195,187 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({ backendUrl, la
 
   return (
     <>
-      {/* Floating Trigger Pill */}
-      {!isOpen && (
-        <button
-          onClick={() => {
-            soundFX.playClick();
-            setIsOpen(true);
-            setIsMinimized(false);
-          }}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-sentinel-cyan via-blue-600 to-sentinel-purple text-white font-bold text-xs font-mono shadow-2xl shadow-sentinel-cyan/30 hover:scale-105 active:scale-95 transition-all group"
-        >
-          <div className="relative">
-            <Bot className="w-5 h-5 text-white group-hover:rotate-12 transition-transform" />
-            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
-            </span>
-          </div>
-          <span className="tracking-wider">AI COPILOT</span>
-        </button>
+      {/* Floating Trigger Button (Compact on Mobile, Full Pill on Desktop) */}
+      {!isOpen && !isDismissed && (
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-1.5 animate-fadeIn">
+          {/* Mobile Dismiss handle */}
+          <button
+            onClick={() => setIsDismissed(true)}
+            className="sm:hidden p-1 rounded-full bg-black/60 border border-gray-700 text-gray-400 hover:text-white"
+            title="Yashirish"
+          >
+            <X className="w-3 h-3" />
+          </button>
+
+          <button
+            onClick={() => {
+              soundFX.playClick();
+              setIsOpen(true);
+              setIsMinimized(false);
+            }}
+            className="flex items-center justify-center gap-2 p-3 sm:px-4 sm:py-3 rounded-full sm:rounded-2xl bg-gradient-to-r from-sentinel-cyan via-blue-600 to-sentinel-purple text-white font-bold text-xs font-mono shadow-2xl shadow-sentinel-cyan/40 hover:scale-105 active:scale-95 transition-all group border border-white/20"
+            title="Open Sentinel AI Copilot"
+          >
+            <div className="relative">
+              <Bot className="w-5 h-5 text-white group-hover:rotate-12 transition-transform" />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+              </span>
+            </div>
+            <span className="tracking-wider hidden sm:inline">AI COPILOT</span>
+          </button>
+        </div>
       )}
 
-      {/* Floating Chat Modal */}
+      {/* Floating Chat Modal / Mobile Bottom Sheet */}
       {isOpen && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 w-[92vw] sm:w-[440px] bg-sentinel-surface border border-sentinel-border rounded-2xl shadow-2xl shadow-sentinel-cyan/20 overflow-hidden flex flex-col transition-all duration-300 ${
-            isMinimized ? "h-14" : "h-[560px] max-h-[85vh]"
-          }`}
-        >
-          {/* Header */}
-          <div className="px-4 py-3 bg-[#0c1322] border-b border-sentinel-border flex items-center justify-between select-none">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-sentinel-cyan/15 border border-sentinel-cyan/30 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-sentinel-cyan" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs font-bold font-mono text-white">SENTINEL AI COPILOT</h3>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-sentinel-cyan/10 border border-sentinel-cyan/30 text-sentinel-cyan font-mono">
-                    GEMINI 3.8
-                  </span>
+        <>
+          {/* Mobile Backdrop Overlay to dismiss by tapping outside */}
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 sm:hidden animate-fadeIn"
+            onClick={() => setIsOpen(false)}
+          />
+
+          <div
+            className={`fixed inset-x-2 bottom-2 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 w-auto sm:w-[440px] bg-sentinel-surface border border-sentinel-border rounded-2xl shadow-2xl shadow-sentinel-cyan/25 overflow-hidden flex flex-col transition-all duration-300 ${
+              isMinimized ? "h-14" : "h-[540px] max-h-[82vh]"
+            }`}
+          >
+            {/* Header */}
+            <div className="px-4 py-3 bg-[#0c1322] border-b border-sentinel-border flex items-center justify-between select-none">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-sentinel-cyan/15 border border-sentinel-cyan/30 flex items-center justify-center shrink-0">
+                  <Bot className="w-4 h-4 text-sentinel-cyan" />
                 </div>
-                <p className="text-[10px] text-gray-400 font-mono flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                  Active Quality Engineering Assistant
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setIsMinimized(!isMinimized)}
-                className="p-1 rounded text-gray-400 hover:text-white hover:bg-sentinel-card transition-colors"
-                title={isMinimized ? "Maximize" : "Minimize"}
-              >
-                {isMinimized ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
-              </button>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 rounded text-gray-400 hover:text-white hover:bg-sentinel-card transition-colors"
-                title="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Body (Messages & Suggestions) */}
-          {!isMinimized && (
-            <>
-              {/* Message Feed */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-3 font-sans text-xs bg-[#080d18]">
-                {messages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`flex flex-col ${
-                      m.sender === "user" ? "items-end" : "items-start"
-                    }`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-2xl p-3 leading-relaxed relative group ${
-                        m.sender === "user"
-                          ? "bg-gradient-to-r from-sentinel-cyan via-blue-600 to-indigo-600 text-white rounded-tr-none shadow-md"
-                          : "bg-sentinel-card border border-sentinel-border text-gray-200 rounded-tl-none shadow-md"
-                      }`}
-                    >
-                      <div className="whitespace-pre-wrap font-sans text-[12px]">
-                        {m.text}
-                      </div>
-
-                      {m.sender === "copilot" && (
-                        <button
-                          onClick={() => copyToClipboard(m.text, m.id)}
-                          className="absolute -top-2 -right-2 p-1 rounded-md bg-sentinel-surface border border-sentinel-border text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Copy Answer"
-                        >
-                          {copiedId === m.id ? (
-                            <Check className="w-3 h-3 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </button>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-gray-500 font-mono mt-1 px-1">
-                      {m.timestamp}
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold font-mono text-white">SENTINEL AI COPILOT</h3>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-sentinel-cyan/10 border border-sentinel-cyan/30 text-sentinel-cyan font-mono">
+                      GEMINI
                     </span>
                   </div>
-                ))}
-
-                {isLoading && (
-                  <div className="flex items-center gap-2 text-sentinel-cyan font-mono text-[11px] bg-sentinel-card p-2 rounded-xl w-fit border border-sentinel-border">
-                    <Sparkles className="w-3.5 h-3.5 animate-spin" />
-                    <span>Gemini AI synthesizing response...</span>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+                  <p className="text-[10px] text-gray-400 font-mono flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+                    Online QA Assistant
+                  </p>
+                </div>
               </div>
 
-              {/* Quick Prompt Chips */}
-              <div className="px-3 py-2 bg-[#0a0f1d] border-t border-sentinel-border flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                {quickPrompts.map((chip, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSendMessage(chip.prompt)}
-                    className="shrink-0 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-sentinel-card hover:bg-sentinel-border border border-sentinel-border text-gray-300 hover:text-sentinel-cyan transition-all"
-                  >
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Input Footer */}
-              <div className="p-3 bg-[#0c1322] border-t border-sentinel-border flex items-center gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSendMessage();
-                  }}
-                  placeholder={
-                    lang === "uz"
-                      ? "Savolingizni yozing..."
-                      : lang === "ru"
-                      ? "Задайте вопрос..."
-                      : "Ask QA Copilot..."
-                  }
-                  className="flex-1 bg-[#080d18] border border-sentinel-border rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sentinel-cyan transition-all"
-                />
-
+              <div className="flex items-center gap-1">
                 <button
-                  onClick={() => handleSendMessage()}
-                  disabled={!input.trim() || isLoading}
-                  className="p-2 rounded-xl bg-sentinel-cyan text-black hover:bg-cyan-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold shadow-md shadow-sentinel-cyan/20"
+                  onClick={() => setIsMinimized(!isMinimized)}
+                  className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-sentinel-card transition-colors"
+                  title={isMinimized ? "Maximize" : "Minimize"}
                 >
-                  <Send className="w-4 h-4" />
+                  {isMinimized ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-sentinel-card transition-colors"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+
+            {/* Body (Messages & Suggestions) */}
+            {!isMinimized && (
+              <>
+                {/* Message Feed */}
+                <div className="flex-1 p-3.5 overflow-y-auto space-y-3 font-sans text-xs bg-[#080d18]">
+                  {messages.map((m) => (
+                    <div
+                      key={m.id}
+                      className={`flex flex-col ${
+                        m.sender === "user" ? "items-end" : "items-start"
+                      }`}
+                    >
+                      <div
+                        className={`max-w-[88%] rounded-2xl p-3 leading-relaxed relative group ${
+                          m.sender === "user"
+                            ? "bg-gradient-to-r from-sentinel-cyan via-blue-600 to-indigo-600 text-white rounded-tr-none shadow-md"
+                            : "bg-sentinel-card border border-sentinel-border text-gray-200 rounded-tl-none shadow-md"
+                        }`}
+                      >
+                        <div className="whitespace-pre-wrap font-sans text-[12px] break-words">
+                          {m.text}
+                        </div>
+
+                        {m.sender === "copilot" && (
+                          <button
+                            onClick={() => copyToClipboard(m.text, m.id)}
+                            className="absolute -top-2 -right-2 p-1 rounded-md bg-sentinel-surface border border-sentinel-border text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Copy Answer"
+                          >
+                            {copiedId === m.id ? (
+                              <Check className="w-3 h-3 text-emerald-400" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-gray-500 font-mono mt-1 px-1">
+                        {m.timestamp}
+                      </span>
+                    </div>
+                  ))}
+
+                  {isLoading && (
+                    <div className="flex items-center gap-2 text-sentinel-cyan font-mono text-[11px] bg-sentinel-card p-2 rounded-xl w-fit border border-sentinel-border">
+                      <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                      <span>Gemini AI javob tayyorlamoqda...</span>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Quick Prompt Chips (Scrollable) */}
+                <div className="px-3 py-2 bg-[#0a0f1d] border-t border-sentinel-border flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  {quickPrompts.map((chip, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSendMessage(chip.prompt)}
+                      className="shrink-0 text-[10px] font-mono px-2.5 py-1 rounded-lg bg-sentinel-card hover:bg-sentinel-border border border-sentinel-border text-gray-300 hover:text-sentinel-cyan transition-all"
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Input Footer */}
+                <div className="p-3 bg-[#0c1322] border-t border-sentinel-border flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSendMessage();
+                    }}
+                    placeholder={
+                      lang === "uz"
+                        ? "Savolingizni yozing..."
+                        : lang === "ru"
+                        ? "Задайте вопрос..."
+                        : "Ask QA Copilot..."
+                    }
+                    className="flex-1 bg-[#080d18] border border-sentinel-border rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sentinel-cyan transition-all"
+                  />
+
+                  <button
+                    onClick={() => handleSendMessage()}
+                    disabled={!input.trim() || isLoading}
+                    className="p-2 rounded-xl bg-sentinel-cyan text-black hover:bg-cyan-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold shadow-md shadow-sentinel-cyan/20 shrink-0"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </>
       )}
     </>
   );

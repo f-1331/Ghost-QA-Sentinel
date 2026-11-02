@@ -331,12 +331,12 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
             {/* Apply Local Patch to Sandbox */}
             <button
               onClick={handleApplyPatch}
               disabled={isPatching || incident.status === "PATCHED"}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md ${
+              className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-md w-full sm:w-auto ${
                 incident.status === "PATCHED"
                   ? "bg-emerald-950/60 border border-emerald-600/50 text-emerald-400 cursor-default"
                   : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white hover:shadow-emerald-500/20"
@@ -354,7 +354,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
             <button
               onClick={handleCreatePR}
               disabled={isCreatingPR || !!incident.pr_url}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md ${
+              className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-md w-full sm:w-auto ${
                 incident.pr_url
                   ? "bg-purple-950/60 border border-purple-600/50 text-purple-400 cursor-default"
                   : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white hover:shadow-purple-500/20"

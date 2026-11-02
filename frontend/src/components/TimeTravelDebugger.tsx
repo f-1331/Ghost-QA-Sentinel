@@ -134,9 +134,9 @@ export const TimeTravelDebugger: React.FC<TimeTravelDebuggerProps> = ({ lang }) 
         </div>
       </div>
 
-      {/* Interactive Horizontal Timeline Scrubber */}
+      {/* Interactive Horizontal Timeline Scrubber (Mobile Scrollable) */}
       <div className="relative pt-2 pb-1">
-        <div className="grid grid-cols-5 gap-2">
+        <div className="flex md:grid md:grid-cols-5 gap-2 overflow-x-auto pb-1.5 no-scrollbar">
           {steps.map((st, idx) => {
             const isSelected = idx === activeStepIdx;
             const isCrash = st.status === "CRASH";
@@ -146,7 +146,7 @@ export const TimeTravelDebugger: React.FC<TimeTravelDebuggerProps> = ({ lang }) 
               <button
                 key={idx}
                 onClick={() => handleSelectStep(idx)}
-                className={`p-2.5 rounded-xl border text-left transition-all relative overflow-hidden group ${
+                className={`p-2.5 rounded-xl border text-left transition-all relative overflow-hidden group min-w-[130px] md:min-w-0 shrink-0 md:shrink ${
                   isSelected
                     ? isCrash
                       ? "bg-red-950/40 border-red-500 ring-1 ring-red-500 shadow-lg shadow-red-500/20"

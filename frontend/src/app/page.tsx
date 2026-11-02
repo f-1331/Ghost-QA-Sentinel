@@ -121,6 +121,7 @@ export default function Dashboard() {
   const [isSandboxModalOpen, setIsSandboxModalOpen] = useState(false);
   const [isCiCdModalOpen, setIsCiCdModalOpen] = useState(false);
   const [isAttackbenchModalOpen, setIsAttackbenchModalOpen] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
   const [targetUrl, setTargetUrl] = useState(`${BACKEND_URL}/sandbox`);
   const [githubRepo, setGithubRepo] = useState("f-1331/Ghost-QA-Sentinel");
@@ -458,6 +459,7 @@ export default function Dashboard() {
         onOpenSandboxModal={() => setIsSandboxModalOpen(true)}
         onOpenCiCdModal={() => setIsCiCdModalOpen(true)}
         onOpenAttackbenchModal={() => setIsAttackbenchModalOpen(true)}
+        onOpenCopilotModal={() => setIsCopilotOpen(true)}
         onExportReport={handleExportReport}
         currentTheme={currentTheme}
       />
@@ -730,7 +732,7 @@ export default function Dashboard() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-sentinel-border bg-sentinel-surface/80 py-4 px-6 text-center text-xs font-mono text-gray-500 relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <footer className="border-t border-sentinel-border bg-sentinel-surface/80 py-4 px-6 pb-24 sm:pb-4 text-center text-xs font-mono text-gray-500 relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span>GHOST-QA SENTINEL v2.0</span>
           <span>•</span>
@@ -790,10 +792,12 @@ export default function Dashboard() {
         lang={lang}
       />
 
-      {/* Floating Sentinel AI QA Copilot */}
+      {/* Floating Sentinel AI QA Copilot (Mobile Optimized with Hide & Navbar Launcher) */}
       <SentinelCopilot
         backendUrl={BACKEND_URL}
         lang={lang}
+        isOpen={isCopilotOpen}
+        onToggleOpen={setIsCopilotOpen}
       />
 
       {/* Autonomous Chaos & Security Attackbench Modal */}

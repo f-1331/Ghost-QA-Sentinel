@@ -40,6 +40,7 @@ interface NavbarProps {
   onOpenSandboxModal: () => void;
   onOpenCiCdModal: () => void;
   onOpenAttackbenchModal: () => void;
+  onOpenCopilotModal?: () => void;
   onExportReport: () => void;
   currentTheme: ThemeId;
 }
@@ -53,6 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSandboxModal,
   onOpenCiCdModal,
   onOpenAttackbenchModal,
+  onOpenCopilotModal,
   onExportReport,
   currentTheme
 }) => {
@@ -107,8 +109,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Action Controls & Navigation Pills */}
-        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+        {/* Action Controls & Navigation Pills (Mobile Smooth Scrolling Bar) */}
+        <div className="flex items-center gap-2 text-xs font-mono overflow-x-auto w-full lg:w-auto pb-1.5 lg:pb-0 no-scrollbar lg:flex-wrap">
           
           {/* Guide / Instructions Button */}
           <button
@@ -116,12 +118,27 @@ export const Navbar: React.FC<NavbarProps> = ({
               soundFX.playClick();
               onOpenGuideModal();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sentinel-cyan/15 border border-sentinel-cyan/40 text-sentinel-cyan hover:bg-sentinel-cyan/25 transition-all font-sans font-medium shadow-sm shadow-sentinel-cyan/10"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sentinel-cyan/15 border border-sentinel-cyan/40 text-sentinel-cyan hover:bg-sentinel-cyan/25 transition-all font-sans font-medium shadow-sm shadow-sentinel-cyan/10 shrink-0"
             title="Interactive First-time User Guide"
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>{t.guideBtn}</span>
           </button>
+
+          {/* AI Copilot Launcher */}
+          {onOpenCopilotModal && (
+            <button
+              onClick={() => {
+                soundFX.playClick();
+                onOpenCopilotModal();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/40 text-blue-400 hover:bg-blue-500/25 transition-all font-sans font-medium shrink-0"
+              title="Sentinel AI Copilot"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span>AI Copilot</span>
+            </button>
+          )}
 
           {/* Theme & Background Customizer Button */}
           <button
@@ -129,7 +146,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               soundFX.playClick();
               onOpenThemeModal();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sentinel-purple/15 border border-sentinel-purple/40 text-purple-400 hover:bg-sentinel-purple/25 transition-all font-sans font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sentinel-purple/15 border border-sentinel-purple/40 text-purple-400 hover:bg-sentinel-purple/25 transition-all font-sans font-medium shrink-0"
             title="Switch Background Themes & Effects"
           >
             <Palette className="w-3.5 h-3.5" />
@@ -141,7 +158,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             href="https://t.me/ghost_qa_sentinel_bot"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0088cc]/20 border border-[#0088cc]/50 text-[#38bdf8] hover:bg-[#0088cc]/30 transition-all font-sans font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0088cc]/20 border border-[#0088cc]/50 text-[#38bdf8] hover:bg-[#0088cc]/30 transition-all font-sans font-medium shrink-0"
             title="Open Telegram Sentinel Bot (@ghost_qa_sentinel_bot)"
           >
             <Send className="w-3.5 h-3.5" />
@@ -154,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               soundFX.playClick();
               onOpenSandboxModal();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25 transition-all font-sans font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25 transition-all font-sans font-medium shrink-0"
             title="Open Interactive Sandbox Target Testbench"
           >
             <Gamepad2 className="w-3.5 h-3.5" />
@@ -167,7 +184,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               soundFX.playClick();
               onOpenCiCdModal();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/25 transition-all font-sans font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/25 transition-all font-sans font-medium shrink-0"
             title="CI/CD GitHub Actions & Webhook Setup"
           >
             <Workflow className="w-3.5 h-3.5" />
@@ -180,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               soundFX.playClick();
               onOpenAttackbenchModal();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/40 text-rose-400 hover:bg-red-500/25 transition-all font-sans font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/40 text-rose-400 hover:bg-red-500/25 transition-all font-sans font-medium shrink-0"
             title="Autonomous Chaos & Security Attackbench"
           >
             <Swords className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
@@ -193,7 +210,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               soundFX.playClick();
               onExportReport();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sentinel-card hover:bg-sentinel-border border border-sentinel-border text-gray-200 hover:text-white transition-all font-sans"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sentinel-card hover:bg-sentinel-border border border-sentinel-border text-gray-200 hover:text-white transition-all font-sans shrink-0"
             title="Download Full Markdown Audit Report"
           >
             <FileDown className="w-3.5 h-3.5 text-sentinel-cyan" />
@@ -201,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Multi-language Selector Pill */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sentinel-card hover:bg-sentinel-border border border-sentinel-border text-gray-200 hover:text-white transition-all font-sans"
@@ -238,7 +255,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Audio FX Toggle */}
           <button
             onClick={toggleSound}
-            className={`p-2 rounded-lg border transition-all ${
+            className={`p-2 rounded-lg border transition-all shrink-0 ${
               soundEnabled
                 ? "bg-sentinel-card border-sentinel-cyan/40 text-sentinel-cyan"
                 : "bg-sentinel-card border-gray-800 text-gray-500"
