@@ -13,6 +13,31 @@ class SoundFX {
     }
   }
 
+  // Soft UI click feedback
+  playClick() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.05);
+
+      gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.05);
+    } catch (e) {}
+  }
+
   // Laser / Radar Scan launch sweep
   playScanStart() {
     if (!this.enabled) return;
@@ -27,7 +52,7 @@ class SoundFX {
       osc.frequency.setValueAtTime(300, this.ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.3);
 
-      gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
 
       osc.connect(gain);
@@ -52,7 +77,7 @@ class SoundFX {
       osc.frequency.setValueAtTime(180, this.ctx.currentTime);
       osc.frequency.setValueAtTime(140, this.ctx.currentTime + 0.1);
 
-      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
 
       osc.connect(gain);
@@ -61,6 +86,16 @@ class SoundFX {
       osc.start();
       osc.stop(this.ctx.currentTime + 0.25);
     } catch (e) {}
+  }
+
+  // Alias for compatibility
+  playBugDetectedAlert() {
+    this.playBugFound();
+  }
+
+  // Scan finished chime
+  playScanComplete() {
+    this.playHealedChime();
   }
 
   // Futuristic digital chime when self-healed

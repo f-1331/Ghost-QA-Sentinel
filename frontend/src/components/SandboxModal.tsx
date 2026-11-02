@@ -7,12 +7,14 @@ interface SandboxModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBugTriggered?: (bugName: string) => void;
+  backendUrl?: string;
 }
 
 export const SandboxModal: React.FC<SandboxModalProps> = ({
   isOpen,
   onClose,
   onBugTriggered,
+  backendUrl,
 }) => {
   const [logs, setLogs] = useState<string[]>([
     "[CyberMart] Sandbox initialized. Ready for interactive testing."

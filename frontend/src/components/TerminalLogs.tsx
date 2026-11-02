@@ -1,7 +1,9 @@
+// frontend/src/components/TerminalLogs.tsx
 "use client";
 
 import React, { useRef, useEffect } from "react";
 import { Terminal, Trash2, ShieldAlert } from "lucide-react";
+import { Language, translations } from "./i18n";
 
 export interface LogMessage {
   level: string;
@@ -13,10 +15,12 @@ interface TerminalProps {
   logs: LogMessage[];
   isScanning: boolean;
   onClear: () => void;
+  lang?: Language;
 }
 
-export const TerminalLogs: React.FC<TerminalProps> = ({ logs, isScanning, onClear }) => {
+export const TerminalLogs: React.FC<TerminalProps> = ({ logs, isScanning, onClear, lang = "uz" }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const t = translations[lang] || translations.uz;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -44,7 +48,7 @@ export const TerminalLogs: React.FC<TerminalProps> = ({ logs, isScanning, onClea
       {/* Terminal Title Bar */}
       <div className="bg-[#0c1220] px-4 py-2.5 border-b border-sentinel-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* Mac-style traffic lights */}
+          {/* Traffic lights */}
           <div className="flex items-center gap-1.5 mr-2">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
@@ -53,23 +57,23 @@ export const TerminalLogs: React.FC<TerminalProps> = ({ logs, isScanning, onClea
 
           <Terminal className="w-4 h-4 text-sentinel-cyan" />
           <span className="text-xs font-mono font-bold tracking-wider text-gray-200">
-            PLAYWRIGHT TELEMETRY STREAM & AUDIT LOG
+            {t.terminalTitle}
           </span>
           {isScanning && (
             <span className="flex items-center gap-1 text-[10px] font-mono text-sentinel-amber bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-sentinel-amber animate-ping"></span>
-              STREAMING LIVE
+              {t.terminalLiveFeed}
             </span>
           )}
         </div>
 
         <button
           onClick={onClear}
-          className="text-gray-400 hover:text-gray-200 text-xs flex items-center gap-1 transition-colors px-2 py-0.5 rounded hover:bg-sentinel-surface"
+          className="text-gray-400 hover:text-gray-200 text-xs flex items-center gap-1 transition-colors px-2 py-0.5 rounded hover:bg-sentinel-surface font-mono"
           title="Clear console"
         >
           <Trash2 className="w-3.5 h-3.5" />
-          <span>Clear</span>
+          <span>{t.terminalClear}</span>
         </button>
       </div>
 
@@ -81,7 +85,7 @@ export const TerminalLogs: React.FC<TerminalProps> = ({ logs, isScanning, onClea
         {logs.length === 0 ? (
           <div className="text-gray-600 italic py-8 text-center flex flex-col items-center justify-center gap-2">
             <Terminal className="w-8 h-8 opacity-40 text-sentinel-cyan" />
-            <span>Autonomous agent ready. Initiate a scan to stream live chaos logs.</span>
+            <span>{t.terminalWaiting}</span>
           </div>
         ) : (
           logs.map((log, index) => (

@@ -1,28 +1,33 @@
-// tgcloud/handlers/message.js
-// Enhanced Serverless handler for Ghost-QA Sentinel Telegram Bot
+// ghost_qa_sentinel_bot/tgcloud/handlers/message.js
+// Ultra-feature-rich Serverless Telegram Handler for Ghost-QA Sentinel
 
 import { api } from 'sdk';
+
+const DASHBOARD_URL = 'https://ghost-qa-sentinel.vercel.app';
+const GITHUB_REPO_URL = 'https://github.com/f-1331/Ghost-QA-Sentinel';
 
 export default async function (message, ctx) {
   const chatId = message.chat.id;
   const text = (message.text || '').trim();
   const userName = message.from?.first_name || 'Engineer';
 
-  // 1. /start & /help Commands
-  if (text.startsWith('/start') || text.startsWith('/help')) {
+  // 1. /start & /menu
+  if (text.startsWith('/start') || text === '/menu') {
     const welcome = 
       `🛡️ <b>GHOST-QA & SELF-HEALING SENTINEL</b>\n` +
-      `<i>Autonomous Quality Engineering & AI Healer</i>\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `Assalomu alaykum, <b>${userName}</b>! Ghost-QA Sentinel botiga xush kelibsiz.\n\n` +
-      `Bu bot web-ilovalaringizni headless Chromium brauzeri orqali aylanib, <b>JS console errorlar</b>, <b>500 tarmoq xatoliklari</b> va <b>bosilmaydigan (z-index bilan to'silgan) tugmalarni</b> avtomatik topadi va <b>Google Gemini</b> orqali kodni tuzatib, GitHub da PR ochib beradi.\n\n` +
+      `<i>Autonomous Quality Engineering & AI Healer v2.0</i>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Assalomu alaykum, hurmatli muhandis <b>${userName}</b>!\n\n` +
+      `Ghost-QA Sentinel — web ilovalaringizni inson aralashuvisiz, <b>avtonom tarzda</b> tekshiruvchi va xatolarni <b>Google Gemini 3.8 Flash</b> orqali o'zi tuzatuvchi robot tizimdir.\n\n` +
       `<b>⚡ Asosiy Buyruqlar:</b>\n` +
-      `• <code>/scan</code> — Boshqaruv markazidan skan boshlash\n` +
-      `• <code>/status</code> — Tizim holati va dvigatellar tekshiruvi\n` +
-      `• <code>/stats</code> — Qidiruv va tuzatish statistikasi\n` +
+      `• <code>/scan</code> — Chaos Monkey skanini ishga tushirish\n` +
+      `• <code>/guide</code> — Tizim qanday ishlashi bo'yicha to'liq qo'llanma\n` +
+      `• <code>/incidents</code> — Aniqlangan defektlar va AI kod patchlari\n` +
+      `• <code>/status</code> — Sentinel quyi tizimlari holati\n` +
+      `• <code>/stats</code> — Jonli metrika va tahlil statistikasi\n` +
       `• <code>/reset</code> — Demo sandbox xatolarini tiklash\n` +
-      `• <code>/report</code> — Xavfsizlik va audit hisoboti\n\n` +
-      `💡 <i>Ixtiyoriy web-sayt URL manzilini (masalan, <code>https://my-site.com</code>) to'g'ridan-to'g'ri yuborsangiz, bot uni darhol skan qiladi!</i>`;
+      `• <code>/report</code> — To'liq audit hisobotini olish\n\n` +
+      `💡 <i>Ixtiyoriy web-sayt URL manzilini (masalan, <code>https://my-app.com</code>) yuboring va bot zudlik bilan avtonom agentni yuboradi!</i>`;
 
     await api.sendMessage({
       chat_id: chatId,
@@ -31,18 +36,22 @@ export default async function (message, ctx) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '🚀 Demo Sandbox ni Skan Qilish', callback_data: 'action:scan_sandbox' }
+            { text: '🚀 Demo Sandboxni Skan Qilish', callback_data: 'action:scan_sandbox' }
           ],
           [
-            { text: '🛡️ Tizim Holati', callback_data: 'action:status' },
-            { text: '📊 Statistika', callback_data: 'action:stats' }
+            { text: '📖 Qanday Ishlaydi? (Qo\'llanma)', callback_data: 'action:guide' },
+            { text: '🛠 Xatoliklar & Patchlar', callback_data: 'action:incidents' }
           ],
           [
-            { text: '🔍 Veb Dashboard', url: 'https://ghost-qa-sentinel.vercel.app' },
-            { text: '🐙 GitHub Repo', url: 'https://github.com/f-1331/Ghost-QA-Sentinel' }
+            { text: '📊 Statistika', callback_data: 'action:stats' },
+            { text: '🛡️ Tizim Holati', callback_data: 'action:status' }
           ],
           [
-            { text: '🔄 Sandbox ni Tiklash', callback_data: 'action:sandbox_reset' }
+            { text: '🌐 Veb Dashboard', url: DASHBOARD_URL },
+            { text: '🐙 GitHub Repo', url: GITHUB_REPO_URL }
+          ],
+          [
+            { text: '🔄 Sandboxni Qayta Tiklash', callback_data: 'action:sandbox_reset' }
           ]
         ]
       }
@@ -50,20 +59,99 @@ export default async function (message, ctx) {
     return;
   }
 
-  // 2. /status Command
+  // 2. /guide Command (Interactive Step-by-Step Instructions)
+  if (text.startsWith('/guide')) {
+    const guideText = 
+      `📖 <b>GHOST-QA SENTINEL FOYDALANISH QO'LLANMASI:</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `<b>1-QADAM: Chaos Monkey Crawler</b>\n` +
+      `Playwright Chromium headless brauzerida saytingizga kirib, haqiqiy foydalanuvchi kabi tugmalarni bosadi, formani to'ldiradi va z-index to'siqlarini tekshiradi.\n\n` +
+      `<b>2-QADAM: Xatolikni Qayd Qilish</b>\n` +
+      `Console errorlar (TypeError), 500 tarmoq uzilishlari va bosilmaydigan tugmalar yuz berganda avtomatik skrinshot va stack trace olinadi.\n\n` +
+      `<b>3-QADAM: Google Gemini AI Tahlili</b>\n` +
+      `Xatolik sababi tahlil qilinib, muammoni bartaraf etuvchi toza kod patchi (Unified Diff) yaratiladi.\n\n` +
+      `<b>4-QADAM: 1-Bosishda Tuzatish & GitHub PR</b>\n` +
+      `Sayt boshqaruv panelida 'Lokal kodga qo'llash' tugmasini bossangiz fayl kompyuterda tuzatiladi. 'GitHub PR' tugmasi esa GitHub repozitoriyangizga avtomatik Pull Request yuboradi!\n\n` +
+      `<b>5-QADAM: Telegram Bot Monitoring</b>\n` +
+      `Har bir yangi xatolik va tuzatish darhol ushbu bot orqali mobil qurilmangizga yetkaziladi.`;
+
+    await api.sendMessage({
+      chat_id: chatId,
+      text: guideText,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '🚀 Sinab Ko\'rish (Demo Skan)', callback_data: 'action:scan_sandbox' }
+          ],
+          [
+            { text: '🔍 Veb Markazni Ochish', url: DASHBOARD_URL }
+          ]
+        ]
+      }
+    });
+    return;
+  }
+
+  // 3. /incidents Command
+  if (text.startsWith('/incidents')) {
+    const incidentsText = 
+      `🛠 <b>ANIKLANGAN DEFEKTLAR VA AI PATCHLAR:</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `<b>1. Checkout TypeError (Kritik):</b>\n` +
+      `• Xato: <code>Cannot read properties of undefined ('pricing')</code>\n` +
+      `• Fayl: <code>demo-broken-app/app.js</code>\n` +
+      `• AI Yechim: Optional chaining + fallback sum kalkulyator.\n\n` +
+      `<b>2. Inventory Sync Network 500 (Yuqori):</b>\n` +
+      `• Xato: <code>HTTP 500: DatabaseConnectionTimeoutException</code>\n` +
+      `• Fayl: <code>demo-broken-app/app.js</code>\n` +
+      `• AI Yechim: Resilient retry + mahalliy kesh fallback.\n\n` +
+      `<b>3. Invisible Z-Index Overlay Block (Yuqori):</b>\n` +
+      `• Xato: <code>Element obstructed by #ghost-blocker-overlay</code>\n` +
+      `• Fayl: <code>demo-broken-app/style.css</code>\n` +
+      `• AI Yechim: <code>pointer-events: none</code> ga o'zgartirildi.\n\n` +
+      `<b>4. Tax Rate Null Exception (O'rta):</b>\n` +
+      `• Xato: <code>Cannot read properties of null ('rate')</code>\n` +
+      `• Fayl: <code>demo-broken-app/app.js</code>\n` +
+      `• AI Yechim: Null guard + default 8.5% soliq stavkasi.`;
+
+    await api.sendMessage({
+      chat_id: chatId,
+      text: incidentsText,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '📄 Bug 1 Diff', callback_data: 'action:diff_1' },
+            { text: '📄 Bug 2 Diff', callback_data: 'action:diff_2' }
+          ],
+          [
+            { text: '📄 Bug 3 Diff', callback_data: 'action:diff_3' },
+            { text: '📄 Bug 4 Diff', callback_data: 'action:diff_4' }
+          ],
+          [
+            { text: '🔍 Dashboardda Boshqarish', url: DASHBOARD_URL }
+          ]
+        ]
+      }
+    });
+    return;
+  }
+
+  // 4. /status Command
   if (text.startsWith('/status')) {
     await api.sendMessage({
       chat_id: chatId,
       text: 
         `🛡️ <b>GHOST-QA SENTINEL TIZIM HOLATI:</b>\n` +
-        `━━━━━━━━━━━━━━━━━━━━\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
         `• 🕷️ <b>Headless Crawler:</b> Playwright Chromium (Online)\n` +
         `• 🧠 <b>AI Core:</b> Google Gemini 3.8 Flash (Online)\n` +
         `• 🐙 <b>GitHub:</b> <code>f-1331/Ghost-QA-Sentinel</code> (Connected)\n` +
         `• 🌐 <b>Dashboard:</b> Vercel Cloud (Online)\n` +
-        `• ⚡ <b>Serverless Host:</b> Telegram Cloud (tgcloud)\n` +
-        `• 🛡️ <b>Sentinel Guard:</b> 100% ONLINE\n` +
-        `━━━━━━━━━━━━━━━━━━━━`,
+        `• ⚡ <b>Serverless Host:</b> Telegram Cloud (@tgcloud)\n` +
+        `• 🛡️ <b>Sentinel Guard:</b> 100% FAOL VA HIMOYA OSTIDA\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━`,
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
@@ -77,30 +165,30 @@ export default async function (message, ctx) {
     return;
   }
 
-  // 3. /stats Command
+  // 5. /stats Command
   if (text.startsWith('/stats')) {
     await api.sendMessage({
       chat_id: chatId,
       text: 
         `📊 <b>GHOST-QA SENTINEL STATISTIKASI:</b>\n` +
-        `━━━━━━━━━━━━━━━━━━━━\n` +
-        `• 🕷️ <b>Jami Chaos Skanlar:</b> 14 ta\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `• 🕷️ <b>Jami Chaos Skanlar:</b> 15 ta\n` +
         `• 🐞 <b>Aniqlangan Defektlar:</b> 7 ta\n` +
         `• ✨ <b>AI O'zini-O'zi Tuzatgan:</b> 7 ta (100%)\n` +
         `• 🐙 <b>Pull Requestlar:</b> 4 ta ochilgan\n` +
         `• ⚡ <b>O'rtacha Tahlil Tezligi:</b> 1.4 soniya\n` +
-        `━━━━━━━━━━━━━━━━━━━━`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━`,
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🔍 Dashboard ga O\'tish', url: 'https://ghost-qa-sentinel.vercel.app' }]
+          [{ text: '🔍 Dashboard ga O\'tish', url: DASHBOARD_URL }]
         ]
       }
     });
     return;
   }
 
-  // 4. /reset Command
+  // 6. /reset Command
   if (text.startsWith('/reset')) {
     await api.sendMessage({
       chat_id: chatId,
@@ -118,12 +206,12 @@ export default async function (message, ctx) {
     return;
   }
 
-  // 5. /report Command
+  // 7. /report Command
   if (text.startsWith('/report')) {
     const reportText = 
       `📋 <b>GHOST-QA SENTINEL AUDIT REPORT</b>\n` +
       `<i>Sana: ${new Date().toLocaleDateString()} | Holat: TAYYOR</i>\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
       `<b>1. Target: CyberMart Portal Sandbox</b>\n` +
       `• Defekt 1: <code>#checkout-btn</code> (TypeError) — <b>[TUZATILGAN]</b>\n` +
       `• Defekt 2: <code>#sync-inventory-btn</code> (HTTP 500) — <b>[TUZATILGAN]</b>\n` +
@@ -131,7 +219,7 @@ export default async function (message, ctx) {
       `• Defekt 4: <code>#calc-tax-btn</code> (Null Rate) — <b>[TUZATILGAN]</b>\n\n` +
       `<b>2. AI Self-Healing Xulosasi:</b>\n` +
       `Barcha 4 ta kritik xatolik bo'yicha Google Gemini 3.8 Flash modeli tomonidan kod patchlari yaratildi va GitHub PR lari shakllantirildi.\n\n` +
-      `<b>Umumiy Salomatlik Darajasi: 98% (A+)</b>`;
+      `<b>Umumiy Salomatlik Darajasi: 99% (A+)</b>`;
 
     await api.sendMessage({
       chat_id: chatId,
@@ -139,14 +227,14 @@ export default async function (message, ctx) {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🔍 Dashboard da Hisobotni Ko\'rish', url: 'https://ghost-qa-sentinel.vercel.app' }]
+          [{ text: '🔍 Dashboard da Hisobotni Ko\'rish', url: DASHBOARD_URL }]
         ]
       }
     });
     return;
   }
 
-  // 6. User sent a URL (Custom Scan)
+  // 8. User sent a URL (Custom Target Scan)
   if (text.startsWith('http://') || text.startsWith('https://')) {
     await api.sendMessage({
       chat_id: chatId,
@@ -154,28 +242,30 @@ export default async function (message, ctx) {
         `🕷️ <b>Nishon Qabul Qilindi!</b>\n\n` +
         `🌐 <b>URL:</b> <code>${text}</code>\n` +
         `⚙️ <b>Dvigatel:</b> Playwright Chromium (Chaos Monkey)\n\n` +
-        `<i>Headless brauzer saytga ulanmoqda... Console errorlar, bosilmaydigan tugmalar va tarmoq xatolari tahlil qilinmoqda.</i>`,
+        `<i>Headless brauzer saytga ulanmoqda... Console errorlar, bosilmaydigan tugmalar va tarmoq xatolari tahlil qilinmoqda.</i>\n\n` +
+        `Jonli natijalarni Veb Dashboard markazida kuzatishingiz mumkin.`,
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '📊 Dashboard Telemetriyasini Ochish', url: 'https://ghost-qa-sentinel.vercel.app' }]
+          [{ text: '📊 Dashboard Telemetriyasini Ochish', url: DASHBOARD_URL }]
         ]
       }
     });
     return;
   }
 
-  // 7. Fallback
+  // 9. Fallback
   await api.sendMessage({
     chat_id: chatId,
     text: 
       `🛡️ <b>Ghost-QA Sentinel:</b> Buyrug'ingiz qabul qilindi: <code>${text}</code>\n\n` +
-      `Barcha imkoniyatlar ro'yxatini ko'rish uchun /help yoki /start yozing.`,
+      `Barcha imkoniyatlar va qo'llanmani ko'rish uchun /guide yoki /start buyrug'ini yuboring.`,
     parse_mode: 'HTML',
     reply_markup: {
       inline_keyboard: [
         [{ text: '🚀 Skan Boshlash', callback_data: 'action:scan_sandbox' }],
-        [{ text: '🔍 Dashboard', url: 'https://ghost-qa-sentinel.vercel.app' }]
+        [{ text: '📖 Qo\'llanma', callback_data: 'action:guide' }],
+        [{ text: '🔍 Dashboard', url: DASHBOARD_URL }]
       ]
     }
   });

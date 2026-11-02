@@ -70,6 +70,12 @@ class GhostCrawler:
 
     async def run_scan(self, url: str, scan_id: str, max_interactions: int = 15) -> List[CrawlerIncident]:
         self.incidents = []
+
+        # Security Hardening: SSRF & Protocol Whitelist Guard
+        if not (url.startswith("http://") or url.startswith("https://")):
+            await self.log("ERROR", f"❌ Security Violation: Target URL scheme '{url}' is forbidden. Only HTTP/HTTPS allowed.")
+            return []
+
         await self.log("INFO", f"🕷️ Ghost-QA Autonomous Agent launching headless Chromium for: {url}")
 
         async with async_playwright() as p:

@@ -268,9 +268,17 @@ You must respond in valid JSON format with the following keys:
     def apply_patch_locally(self, target_file: str, original_code: str, fixed_code: str) -> bool:
         """
         Directly patches the file on the local machine to demonstrate self-healing in real-time!
+        Enforces path traversal safety check to prevent writing outside project tree.
         """
         try:
-            full_path = BASE_DIR / target_file
+            full_path = (BASE_DIR / target_file).resolve()
+            base_dir_resolved = BASE_DIR.resolve()
+
+            # Security Hardening: Path Traversal Guard
+            if not str(full_path).startswith(str(base_dir_resolved)):
+                print(f"[SecurityAlert] Path traversal attempt blocked: {target_file}")
+                return False
+
             if not full_path.exists():
                 return False
 
@@ -283,7 +291,7 @@ You must respond in valid JSON format with the following keys:
                 # Try normalized whitespace replacement
                 import re
                 orig_pattern = re.escape(original_code.strip())
-                orig_pattern = re.sub(r'\\s+', r'\\s+', orig_pattern)
+                orig_pattern = re.sub(r'\s+', r'\s+', orig_pattern)
                 match = re.search(orig_pattern, content)
                 if match:
                     new_content = content[:match.start()] + fixed_code + content[match.end():]

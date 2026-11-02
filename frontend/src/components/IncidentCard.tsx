@@ -1,3 +1,4 @@
+// frontend/src/components/IncidentCard.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -10,11 +11,11 @@ import {
   Eye, 
   Wrench, 
   AlertTriangle,
-  Globe,
-  Layers,
   Code
 } from "lucide-react";
 import { DiffViewer } from "./DiffViewer";
+import { Language, translations } from "./i18n";
+import { soundFX } from "./SoundEffects";
 
 export interface IncidentData {
   id: string;
@@ -40,17 +41,19 @@ interface IncidentCardProps {
   incident: IncidentData;
   onApplyPatch: (incidentId: string) => Promise<void>;
   onCreatePR: (incidentId: string) => Promise<void>;
+  lang?: Language;
 }
 
 export const IncidentCard: React.FC<IncidentCardProps> = ({
   incident,
   onApplyPatch,
   onCreatePR,
+  lang = "uz"
 }) => {
-  const [lang, setLang] = useState<"en" | "uz">("en");
   const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const [isPatching, setIsPatching] = useState(false);
   const [isCreatingPR, setIsCreatingPR] = useState(false);
+  const t = translations[lang] || translations.uz;
 
   const getSeverityBadge = (sev: string) => {
     switch (sev.toUpperCase()) {
@@ -71,28 +74,28 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
         return (
           <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-semibold font-mono">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            SELF-HEALED (LOCAL)
+            {t.statusPatched}
           </span>
         );
       case "PR_CREATED":
         return (
           <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/50 text-purple-400 font-semibold font-mono">
             <GitPullRequest className="w-3.5 h-3.5" />
-            PR DISPATCHED
+            {t.statusPrCreated}
           </span>
         );
       case "HEALING":
         return (
           <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 font-semibold font-mono">
             <Sparkles className="w-3.5 h-3.5 animate-spin" />
-            PATCH READY
+            {t.statusHealing}
           </span>
         );
       default:
         return (
           <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 font-semibold font-mono">
             <AlertTriangle className="w-3.5 h-3.5" />
-            DETECTED
+            {t.statusDiscovered}
           </span>
         );
     }
@@ -100,8 +103,10 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
 
   const handleApplyPatch = async () => {
     setIsPatching(true);
+    soundFX.playClick();
     try {
       await onApplyPatch(incident.id);
+      soundFX.playHealedChime();
     } finally {
       setIsPatching(false);
     }
@@ -109,12 +114,20 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
 
   const handleCreatePR = async () => {
     setIsCreatingPR(true);
+    soundFX.playClick();
     try {
       await onCreatePR(incident.id);
+      soundFX.playHealedChime();
     } finally {
       setIsCreatingPR(false);
     }
   };
+
+  // Determine root cause text based on current selected language
+  const rootCauseText = 
+    lang === "uz" 
+      ? (incident.root_cause_uz || incident.root_cause_en || "AI tahlili amalga oshirilmoqda...")
+      : (incident.root_cause_en || incident.root_cause_uz || "AI diagnosis pending analysis...");
 
   return (
     <div className="bg-sentinel-surface border border-sentinel-border hover:border-gray-700 transition-all rounded-2xl shadow-xl overflow-hidden mb-6">
@@ -152,7 +165,7 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
             <div>
               <div className="text-xs uppercase font-mono tracking-wider text-gray-400 mb-1 flex items-center gap-1.5">
                 <Code className="w-3.5 h-3.5 text-sentinel-crimson" />
-                <span>Runtime Exception / Failure Trace</span>
+                <span>{t.stackTraceTitle}</span>
               </div>
               <p className="font-mono text-sm text-red-400 font-semibold break-all">
                 {incident.message}
@@ -166,7 +179,7 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
 
             {incident.target_file && (
               <div className="mt-3 pt-3 border-t border-gray-800/80 flex items-center justify-between text-xs font-mono text-gray-400">
-                <span>Faulty Source Node:</span>
+                <span>{t.targetFileTitle}:</span>
                 <span className="text-sentinel-cyan font-semibold">{incident.target_file}</span>
               </div>
             )}
@@ -177,12 +190,12 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
             <div className="text-xs uppercase font-mono tracking-wider text-gray-400 mb-2 flex items-center justify-between">
               <span className="flex items-center gap-1">
                 <Eye className="w-3.5 h-3.5 text-sentinel-cyan" />
-                <span>Viewport Snapshot</span>
+                <span>{t.viewScreenshotBtn}</span>
               </span>
               {incident.screenshot_url && (
                 <button
                   onClick={() => setShowScreenshotModal(true)}
-                  className="text-[11px] text-sentinel-cyan hover:underline"
+                  className="text-[11px] text-sentinel-cyan hover:underline font-mono"
                 >
                   Expand
                 </button>
@@ -204,7 +217,7 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="h-28 rounded-lg bg-black/40 border border-dashed border-gray-800 flex items-center justify-center text-gray-600 text-xs">
+              <div className="h-28 rounded-lg bg-black/40 border border-dashed border-gray-800 flex items-center justify-center text-gray-600 text-xs font-mono">
                 No screenshot captured
               </div>
             )}
@@ -219,35 +232,13 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
                 <Sparkles className="w-3.5 h-3.5 text-sentinel-cyan" />
               </div>
               <span className="text-xs font-bold font-mono tracking-wider text-white">
-                AI ROOT CAUSE DIAGNOSIS
+                {t.rootCauseTitle}
               </span>
-            </div>
-
-            {/* Language Switcher Button */}
-            <div className="flex items-center bg-[#070b14] border border-sentinel-border rounded-lg p-0.5 text-xs font-mono">
-              <button
-                onClick={() => setLang("en")}
-                className={`px-2 py-0.5 rounded transition-all ${
-                  lang === "en" ? "bg-sentinel-cyan text-black font-bold" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                🇬🇧 English
-              </button>
-              <button
-                onClick={() => setLang("uz")}
-                className={`px-2 py-0.5 rounded transition-all ${
-                  lang === "uz" ? "bg-sentinel-cyan text-black font-bold" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                🇺🇿 O&apos;zbekcha
-              </button>
             </div>
           </div>
 
           <p className="text-sm text-gray-200 leading-relaxed font-sans">
-            {lang === "en"
-              ? incident.root_cause_en || "AI diagnosis pending analysis."
-              : incident.root_cause_uz || "AI tahlili amalga oshirilmoqda."}
+            {rootCauseText}
           </p>
         </div>
 
@@ -293,10 +284,10 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
             >
               <Wrench className="w-3.5 h-3.5" />
               {isPatching
-                ? "Applying Patch..."
+                ? t.applyingPatch
                 : incident.status === "PATCHED"
-                ? "✓ Patch Applied to Disk"
-                : "Apply Self-Healing Patch Locally"}
+                ? `✓ ${t.patchedSuccess}`
+                : t.applyPatchBtn}
             </button>
 
             {/* Create GitHub PR */}
@@ -311,10 +302,10 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
             >
               <GitPullRequest className="w-3.5 h-3.5" />
               {isCreatingPR
-                ? "Creating PR..."
+                ? t.creatingPr
                 : incident.pr_url
-                ? `PR #${incident.pr_number} Created`
-                : "Approve & Create GitHub PR"}
+                ? `PR #${incident.pr_number} ${t.prCreatedSuccess}`
+                : t.createPrBtn}
             </button>
           </div>
         </div>
