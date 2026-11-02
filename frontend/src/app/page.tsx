@@ -16,10 +16,10 @@ import {
   AlertOctagon,
   ExternalLink
 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { StatsCards } from "@/components/StatsCards";
-import { TerminalLogs, LogMessage } from "@/components/TerminalLogs";
-import { IncidentCard, IncidentData } from "@/components/IncidentCard";
+import { Navbar } from "../components/Navbar";
+import { StatsCards } from "../components/StatsCards";
+import { TerminalLogs, LogMessage } from "../components/TerminalLogs";
+import { IncidentCard, IncidentData } from "../components/IncidentCard";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const WS_URL = BACKEND_URL.replace(/^http/, "ws");
