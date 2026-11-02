@@ -26,7 +26,7 @@ const WS_URL = BACKEND_URL.replace(/^http/, "ws");
 
 export default function Dashboard() {
   const [targetUrl, setTargetUrl] = useState(`${BACKEND_URL}/sandbox`);
-  const [githubRepo, setGithubRepo] = useState("ghost-qa-sentinel/cybermart-portal");
+  const [githubRepo, setGithubRepo] = useState("f-1331/Ghost-QA-Sentinel");
   const [scanMode, setScanMode] = useState("CHAOS_MONKEY");
   const [isScanning, setIsScanning] = useState(false);
   const [currentScanId, setCurrentScanId] = useState<string | null>(null);

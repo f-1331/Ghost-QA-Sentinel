@@ -18,12 +18,14 @@ class Settings(BaseSettings):
 
     # GitHub Integration
     GITHUB_TOKEN: Optional[str] = None
-    GITHUB_DEFAULT_OWNER: Optional[str] = "ghost-qa-sentinel"
-    GITHUB_DEFAULT_REPO: Optional[str] = "demo-target-repo"
+    GITHUB_REPO: Optional[str] = "f-1331/Ghost-QA-Sentinel"
+    GITHUB_DEFAULT_OWNER: Optional[str] = "f-1331"
+    GITHUB_DEFAULT_REPO: Optional[str] = "Ghost-QA-Sentinel"
 
     # Telegram Bot
     TELEGRAM_BOT_TOKEN: Optional[str] = None
     TELEGRAM_CHAT_ID: Optional[str] = None
+    TELEGRAM_ACCOUNT: Optional[str] = "@fayzbek1331"
 
     # Simulation Mode
     SIMULATION_MODE: bool = True
