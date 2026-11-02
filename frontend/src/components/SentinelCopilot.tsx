@@ -148,9 +148,13 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({
     setTimeout(() => {
       soundFX.playHealedChime();
       let fallbackAnswer = "";
-      const lower = text.toLowerCase();
+      const lower = text.toLowerCase().trim();
 
-      if (lower.includes("rust")) {
+      if (lower.includes("salom") || lower.includes("assalom") || lower.includes("hello") || lower.includes("hi") || lower.length <= 4) {
+        fallbackAnswer = 
+          "👋 **Va alaykum assalom! Xush kelibsiz!**\n\n" +
+          "Qalaysiz, ishlaringiz yaxshimi? Men Ghost-QA Sentinel AI Copilotiman. Web ilovangizdagi har qanday xatolik, TypeError, layout buzilishlarini tekshirish yoki Playwright testlarini generatsiya qilishda sizga yordam berishga tayyorman. Menga qanday savolingiz bor?";
+      } else if (lower.includes("rust")) {
         fallbackAnswer = 
           "⚡ **Rust Arxitekturasi Tahlili:**\n\n" +
           "Rust tili Playwright Chromium brauzeri render tezligini o'zgartira olmaydi (chunki brauzer baribir C++ da ishlaydi). Ammo **10 000+ parallel tarmoq so'rovlarini tahlil qilishda** va **AST darajasida kod diff solishtirishda** Rust 10x-50x tezlik va 0-xotira oqishini (memory safety) beradi.";
@@ -170,7 +174,7 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({
       } else {
         fallbackAnswer = 
           "🤖 **Ghost-QA AI Tavsiyasi:**\n\n" +
-          "Tizim barcha runtime istisnolarni Playwright orqali real vaqtda intercept qiladi va Google Gemini 3.8 Flash orqali avtomatik kod patchini (Unified Diff) yaratadi. 1-bosishda 'Apply Local Patch' tugmasini bosib faylni mahalliy diskingizda tuzatishingiz mumkin!";
+          "Tizim barcha runtime istisnolarni Playwright orqali real vaqtda intercept qiladi va Google Gemini orqali avtomatik kod patchini (Unified Diff) yaratadi. 1-bosishda 'Apply Local Patch' tugmasini bosib faylni mahalliy diskingizda tuzatishingiz mumkin!";
       }
 
       setMessages((prev) => [

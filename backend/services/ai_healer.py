@@ -89,22 +89,39 @@ You must respond in valid JSON format with the following keys:
   "diff": "unified git diff patch format"
 }}
 """
-        response = self.gemini_client.models.generate_content(
-            model=settings.GEMINI_MODEL,
-            contents=prompt,
-            config={
-                "response_mime_type": "application/json"
-            }
-        )
+        models_to_try = [
+            settings.GEMINI_MODEL,
+            "gemini-3.5-flash",
+            "gemini-flash-lite-latest",
+            "gemini-3.8-flash",
+            "gemini-3.7-flash"
+        ]
+        candidate_models = list(dict.fromkeys(models_to_try))
         
-        parsed = json.loads(response.text)
-        if not parsed.get("diff") and parsed.get("original_code") and parsed.get("fixed_code"):
-            parsed["diff"] = self._generate_diff(
-                parsed.get("target_file", "source_file"),
-                parsed["original_code"],
-                parsed["fixed_code"]
-            )
-        return parsed
+        last_error = None
+        for candidate_model in candidate_models:
+            try:
+                response = self.gemini_client.models.generate_content(
+                    model=candidate_model,
+                    contents=prompt,
+                    config={
+                        "response_mime_type": "application/json"
+                    }
+                )
+                if response and response.text:
+                    parsed = json.loads(response.text)
+                    if not parsed.get("diff") and parsed.get("original_code") and parsed.get("fixed_code"):
+                        parsed["diff"] = self._generate_diff(
+                            parsed.get("target_file", "source_file"),
+                            parsed["original_code"],
+                            parsed["fixed_code"]
+                        )
+                    return parsed
+            except Exception as e:
+                last_error = e
+                print(f"[AIHealer] Model {candidate_model} failed in _call_gemini: {e}. Trying next model...")
+
+        raise last_error or RuntimeError("All Gemini models exhausted")
 
     def _heuristic_heal(
         self,
@@ -491,54 +508,118 @@ async def sanitize_fingerprint_headers(request, call_next):
 
     async def ask_copilot(self, prompt: str, context: Optional[str] = None) -> str:
         """
-        Interactive QA Copilot powered by Google Gemini 3.8 Flash.
+        Interactive QA Copilot powered by Google Gemini (Multi-Model Cascade with Human Conversational Intelligence).
         """
-        if self.gemini_client and settings.GEMINI_API_KEY:
-            try:
-                system_instruction = (
-                    "You are Ghost-QA Sentinel AI Copilot, a world-class Principal QA Automation Architect and "
-                    "Software Resilience Engineer. Answer technical questions concisely, accurately, and with actionable code snippets. "
-                    "Support English, Uzbek, and Russian seamlessly based on the user's language."
-                )
-                full_prompt = f"{system_instruction}\n\nContext:\n{context or 'Ghost-QA Autonomous QA Sentinel'}\n\nUser Question:\n{prompt}"
-                response = self.gemini_client.models.generate_content(
-                    model=settings.GEMINI_MODEL,
-                    contents=full_prompt
-                )
-                if response and response.text:
-                    return response.text
-            except Exception as e:
-                print(f"[AIHealer] Copilot Gemini invocation error: {e}")
+        p_clean = (prompt or "").strip()
+        p_lower = p_clean.lower()
 
-        # Intelligent Fallback Responses
-        p_lower = prompt.lower()
-        if "test" in p_lower or "playwright" in p_lower or "jest" in p_lower:
+        # 1. Multi-Model Cascade via Gemini API
+        if self.gemini_client and settings.GEMINI_API_KEY:
+            models_to_try = [
+                settings.GEMINI_MODEL,
+                "gemini-3.5-flash",
+                "gemini-flash-lite-latest",
+                "gemini-3.8-flash",
+                "gemini-3.7-flash"
+            ]
+            candidate_models = list(dict.fromkeys(models_to_try))
+
+            system_instruction = (
+                "You are Ghost-QA Sentinel AI Copilot — a warm, highly intelligent, senior QA Automation Architect and Software Resilience Engineer.\n"
+                "COMMUNICATION RULES:\n"
+                "1. Tone: Warm, natural, professional, empathetic, and human. NEVER sound like an automated robotic IVR or dry machine.\n"
+                "2. NEVER use bureaucratic clichés like 'Savolingiz qabul qilindi' or 'Xabaringiz tizimga kiritildi'. Talk like a real senior engineer pair-programming with the user.\n"
+                "3. Language: Match the user's language immediately. If the user writes in Uzbek, reply in rich, natural, grammatically correct Uzbek. If Russian, reply in Russian. If English, reply in English.\n"
+                "4. Greetings: If the user says 'salom', 'assalomu alaykum', 'hi', or similar, return a warm, welcoming greeting, ask how they are doing, and briefly mention how you can help them test, debug, or heal their app.\n"
+                "5. Technical Questions: Provide accurate, actionable insights, explain root causes simply, and include clean code examples (Playwright, Jest, JavaScript/TypeScript, Python, Rust) where appropriate."
+            )
+            full_prompt = f"{system_instruction}\n\nContext:\n{context or 'Ghost-QA Autonomous QA Sentinel'}\n\nUser Question:\n{p_clean}"
+
+            for candidate_model in candidate_models:
+                try:
+                    response = self.gemini_client.models.generate_content(
+                        model=candidate_model,
+                        contents=full_prompt
+                    )
+                    if response and response.text and response.text.strip():
+                        return response.text.strip()
+                except Exception as e:
+                    print(f"[AIHealer] Copilot model {candidate_model} failed: {e}. Trying next candidate...")
+
+        # 2. Intelligent, Warm & Conversational Fallback Responses (Zero Robotic Phrasing)
+        # 2.1 Greetings
+        greetings = ["salom", "assalom", "alaykum", "qales", "qalaysiz", "yaxshimisiz", "hi", "hello", "hey", "privet", "zdravstvuyte"]
+        if any(g in p_lower for g in greetings) or len(p_clean) <= 4:
             return (
-                "🧪 **Avtomatlashtirilgan Test Tavsiyasi:**\n"
-                "Ushbu nuqson uchun Playwright E2E regressiya testi tavsiya etiladi:\n"
+                "👋 **Va alaykum assalom! Xush kelibsiz!**\n\n"
+                "Qalaysiz, ishlaringiz yaxshimi? Men **Ghost-QA Sentinel AI Copilot**man — siz bilan yonma-yon ishlaydigan Senior QA muhandisi va avtomatlashtirish yordamchingizman.\n\n"
+                "Sizga quyidagi amallarda yordam bera olaman:\n"
+                "• 🕷️ **Avtonom Playwright Skan:** Saytingizdagi barcha tugma va formalarni tekshirish\n"
+                "• ⚔️ **Chaos Attackbench:** XSS, SQLi, SSRF va 25x yuklama bilan saytni sinash\n"
+                "• 🩹 **Avtomatik Tuzatish:** Xatoliklarni AI orqali kod darajasida (Unified Diff) o'zi tuzatish\n"
+                "• 🧪 **E2E Regressiya Testlari:** Playwright va Jest testlarini avtomatik generatsiya qilish\n\n"
+                "Bugun saytingizni qaysi yo'nalishda sinovdan o'tkazamiz yoki qanday texnik savolingiz bor?"
+            )
+
+        # 2.2 Bot Identity / AI Model
+        if any(k in p_lower for k in ["kim san", "kimsan", "qaysi ai", "qanaqa ai", "model", "who are you"]):
+            return (
+                "🧠 **Ghost-QA Sentinel AI Copilot**\n\n"
+                "Men Google Gemini neyrotizimlari va Playwright avtomatlashtirish dvigateli asosida ishlaydigan avtonom QA arxitektoriman.\n\n"
+                "Vazifam — web ilovalarni xavfsizlik va barqarorlik bo'yicha mustahkamlash, konsol xatolarini (TypeError, unhandled rejection) topish va ularni inson aralashuvisiz bir zumda tuzatish patchlarini yaratishdir."
+            )
+
+        # 2.3 How It Works / Instructions
+        if any(k in p_lower for k in ["qanday ishlaydi", "ishlash prinsipi", "instruksiya", "qo'llanma", "how it works"]):
+            return (
+                "📖 **Ghost-QA Sentinel Ishlash Ketma-Ketligi:**\n\n"
+                "1. **🔍 Playwright Crawler:** Brauzer sahifani to'liq ochib, barcha interaktiv elementlarni (tugmalar, modallar, z-index qatlamlarini) tekshiradi.\n"
+                "2. **⚔️ Chaos Attackbench:** Saytga real kiberhujumlar va yuklama paketlari yuboriladi.\n"
+                "3. **🧠 AI Diagnostika & Self-Healing:** Xato chiqqan zahoti Google Gemini uning tub sababini topadi va `app.js` yoki kerakli fayl uchun toza tuzatish (diff) yozadi.\n"
+                "4. **⚡ 1-Bosishda Tuzatish:** 'Apply Local Patch' tugmasi bilan fayl lokal diskingizda avtomatik o'zgaradi va Neon PostgreSQL bazasiga yoziladi."
+            )
+
+        # 2.4 Rust Architecture
+        if "rust" in p_lower:
+            return (
+                "⚡ **Rust Arxitekturasi Tahlili:**\n\n"
+                "Rust tili Playwright Chromium render tezligini o'zgartirmasa-da, **10 000+ parallel tarmoq so'rovlarini qayta ishlashda**, loglar oqimini parse qilishda va AST-diff hisoblashda 20x-50x tezlik beradi hamda xotiradan oqish (memory leak) xavfini nolga tenglashtiradi!"
+            )
+
+        # 2.5 Tests / Playwright / Jest
+        if any(k in p_lower for k in ["test", "playwright", "jest", "e2e"]):
+            return (
+                "🧪 **Playwright E2E Regressiya Test Tavsiyasi:**\n\n"
                 "```typescript\n"
-                "test('Verify checkout cart handles null pricing gracefully', async ({ page }) => {\n"
+                "import { test, expect } from '@playwright/test';\n\n"
+                "test('Verify cart handles null pricing and undefined objects gracefully', async ({ page }) => {\n"
+                "  const consoleErrors: string[] = [];\n"
+                "  page.on('console', msg => msg.type() === 'error' && consoleErrors.push(msg.text()));\n"
                 "  await page.goto('/sandbox');\n"
                 "  await page.click('button#checkout-btn');\n"
-                "  await expect(page.locator('.log-error')).toHaveCount(0);\n"
+                "  expect(consoleErrors).toHaveLength(0);\n"
                 "});\n"
                 "```\n"
-                "Bu test har bir CI/CD buildda xato qayta chiqmasligini (regression prevention) 100% kafolatlaydi."
+                "Ushbu test har bir CI/CD pipeline ishga tushganda xato qayta chiqmasligini kafolatlaydi."
             )
-        elif "xavfsizlik" in p_lower or "security" in p_lower or "owasp" in p_lower:
+
+        # 2.6 Security / OWASP
+        if any(k in p_lower for k in ["xavfsizlik", "security", "owasp", "xss", "sqli", "hujum"]):
             return (
-                "🛡️ **Sentinel Xavfsizlik Auditi:**\n"
-                "1. **SSRF Guard:** Barcha kiruvchi URL manzillar faqat HTTP/HTTPS protokoli bilan cheklangan.\n"
-                "2. **Path Traversal Protection:** Fayl patchlash `BASE_DIR` dan tashqariga chiqishni qat'iy bloklaydi.\n"
-                "3. **CORS & Rate Limiting:** API endpointlari ortiqcha so'rovlardan himoyalangan."
+                "🛡️ **Ghost-QA Xavfsizlik & Himoya Auditi:**\n\n"
+                "• **SSRF Guard:** Tashqi URL so'rovlari faqat tasdiqlangan HTTP/HTTPS protokollariga yo'naltiriladi.\n"
+                "• **Path Traversal Protection:** Fayllarni o'zgartirish `BASE_DIR` dan tashqariga chiqishi qat'iyan man etilgan.\n"
+                "• **XSS / SQLi Filter:** Kiruvchi matnlar xavfsiz escape qilinadi.\n"
+                "• **Neon Serverless PostgreSQL:** Barcha audit va skan jurnallari xavfsiz shifrlangan holda saqlanadi."
             )
-        else:
-            return (
-                "🤖 **Ghost-QA Sentinel Copilot:**\n"
-                f"Savolingiz qabul qilindi: *{prompt}*\n\n"
-                "Tizimimiz avtonom Playwright crawler va Google Gemini 3.8 Flash tahlili asosida ishlaydi. "
-                "Har qanday kod xatosi bo'yicha darhol regressiya testi yaratishim yoki tuzatish patchini ishlab chiqishim mumkin!"
-            )
+
+        # 2.7 General Technical Fallback (Human & Helpful)
+        return (
+            f"💡 **Tahlil & Tavsiya:**\n\n"
+            f"*{p_clean}* masalasi bo'yicha:\n"
+            f"Web ilovangizda ushbu holatni sinash uchun yuqoridagi **Tezkor Skan** yoki **Chaos Attackbench** tugmasidan foydalanishingiz mumkin. "
+            f"Agar aniq bir fayl yoki funksiyada xatolik kuzatilayotgan bo'lsa, xato xabari (error stack) yoki kod parchasini yuboring, birgalikda tahlil qilib to'g'irlaymiz!"
+        )
 
     def generate_regression_tests(
         self,

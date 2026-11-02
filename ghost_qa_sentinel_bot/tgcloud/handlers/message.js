@@ -26,14 +26,30 @@ export default async function (message, ctx) {
   const text = rawText.toLowerCase();
   const userName = message.from?.first_name || 'Muhandis';
 
-  // 1. /start, /menu, or greeting
-  if (text.startsWith('/start') || text === '/menu' || text === 'start' || text === 'menu') {
+  // 1. /start, /menu, or greeting (salom, assalomu alaykum, hi, etc.)
+  const isGreeting = 
+    text.startsWith('/start') || 
+    text === '/menu' || 
+    text === 'start' || 
+    text === 'menu' ||
+    text === 'salom' ||
+    text.startsWith('salom') ||
+    text.includes('assalom') ||
+    text.includes('alaykum') ||
+    text.includes('qales') ||
+    text.includes('qalaysiz') ||
+    text.includes('yaxshimisiz') ||
+    text === 'hi' ||
+    text === 'hello' ||
+    text === 'hey';
+
+  if (isGreeting) {
     const welcome = 
-      `🛡️ <b>GHOST-QA & SELF-HEALING SENTINEL v2.5</b>\n` +
+      `🛡️ <b>GHOST-QA & SELF-HEALING SENTINEL</b>\n` +
       `<i>Autonomous Quality Assurance & Multi-Vector Red-Team Engine</i>\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `Assalomu alaykum, hurmatli muhandis <b>${userName}</b>!\n\n` +
-      `Ghost-QA Sentinel — web ilovalaringizni avtonom tarzda tekshiruvchi, xavfsizlik hujumlari bilan sinovchi va xatoliklarni <b>Google Gemini 3.8 Flash</b> orqali o'zi tuzatuvchi tizimdir.\n\n` +
+      `👋 <b>Va alaykum assalom, hurmatli muhandis ${userName}!</b>\n\n` +
+      `Qalaysiz, ishlaringiz yaxshimi? Ghost-QA Sentinel — web ilovalaringizni avtonom tarzda tekshiruvchi, xavfsizlik hujumlari bilan sinovchi va xatoliklarni <b>Google Gemini</b> orqali o'zi tuzatuvchi tizimdir.\n\n` +
       `👇 <b>Quyidagi tugmalardan birini bosing va tizimdan mazza qilib foydalaning!</b>`;
 
     await api.sendMessage({
@@ -357,12 +373,11 @@ export default async function (message, ctx) {
 
   // 11. Intelligent Conversational AI Fallback (Direct Copilot Response for ANY Question)
   const aiAnswer = 
-    `🤖 <b>GHOST-QA AI COPILOT (Gemini 3.8 Flash):</b>\n` +
-    `Savol: <i>"${rawText}"</i>\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-    `Ushbu masala bo'yicha QA tahlili:\n\n` +
+    `🤖 <b>GHOST-QA AI COPILOT:</b>\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `Hurmatli <b>${userName}</b>, <i>"${rawText}"</i> mavzusi bo'yicha QA tahlili:\n\n` +
     `1. <b>Diagnostika:</b> Ghost-QA Sentinel tizimi Playwright Chromium orqali ilovani real foydalanuvchidek tekshiradi va tarmoq, xotira hamda DOM xatolarini aniqlaydi.\n` +
-    `2. <b>Tuzatish:</b> Aniqlangan har qanday nuqson uchun Google Gemini 3.8 Flash avtomatik toza kod patchi (Unified Diff) yaratadi.\n` +
+    `2. <b>Tuzatish:</b> Aniqlangan har qanday nuqson uchun Google Gemini avtomatik toza kod patchi (Unified Diff) yaratadi.\n` +
     `3. <b>Amalga oshirish:</b> Dashboard orqali birgina bosish bilan lokal kodga qo'llash yoki GitHub PR ochish mumkin.\n\n` +
     `💡 <i>Pastdagi tugmalar orqali tezkor skan yoki xavfsizlik hujumi sinovini boshlashingiz mumkin!</i>`;
 
