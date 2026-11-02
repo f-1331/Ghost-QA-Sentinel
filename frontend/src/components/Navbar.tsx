@@ -1,7 +1,20 @@
 "use client";
 
-import React from "react";
-import { Shield, Radio, Terminal, Bot, Github, ExternalLink, Zap } from "lucide-react";
+import React, { useState } from "react";
+import { 
+  Shield, 
+  Radio, 
+  Terminal, 
+  Bot, 
+  Github, 
+  ExternalLink, 
+  Volume2, 
+  VolumeX, 
+  FileDown, 
+  Send,
+  Gamepad2
+} from "lucide-react";
+import { soundFX } from "./SoundEffects";
 
 interface NavbarProps {
   systemHealth: {
@@ -11,11 +24,28 @@ interface NavbarProps {
     telegram_active?: boolean;
     simulation_mode?: boolean;
   } | null;
+  onOpenSandboxModal: () => void;
+  onExportReport: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ systemHealth }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  systemHealth,
+  onOpenSandboxModal,
+  onExportReport,
+}) => {
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const toggleSound = () => {
+    const newState = !soundEnabled;
+    setSoundEnabled(newState);
+    soundFX.enabled = newState;
+    if (newState) {
+      soundFX.playHealedChime();
+    }
+  };
+
   return (
-    <header className="border-b border-sentinel-border bg-sentinel-surface/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5">
+    <header className="border-b border-sentinel-border bg-sentinel-surface/80 backdrop-blur-md sticky top-0 z-50 px-4 md:px-6 py-3">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Brand */}
         <div className="flex items-center gap-3">
@@ -45,43 +75,52 @@ export const Navbar: React.FC<NavbarProps> = ({ systemHealth }) => {
           </div>
         </div>
 
-        {/* Subsystem Telemetry Indicators */}
-        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-          {/* Playwright Headless Engine */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sentinel-card border border-sentinel-border shadow-sm">
-            <Radio className="w-3.5 h-3.5 text-sentinel-emerald animate-pulse" />
-            <span className="text-gray-300">Playwright Chromium</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold">READY</span>
-          </div>
-
-          {/* Gemini AI Core */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sentinel-card border border-sentinel-border shadow-sm">
-            <Bot className="w-3.5 h-3.5 text-sentinel-cyan" />
-            <span className="text-gray-300">Gemini 2.5 Flash</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-400 font-bold">
-              {systemHealth?.gemini_active ? "ACTIVE" : "AUTO-HEAL"}
-            </span>
-          </div>
-
-          {/* GitHub Engine */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sentinel-card border border-sentinel-border shadow-sm">
-            <Github className="w-3.5 h-3.5 text-sentinel-purple" />
-            <span className="text-gray-300">GitHub Sync</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-400 font-bold">
-              {systemHealth?.github_active ? "LIVE" : "SIMULATED"}
-            </span>
-          </div>
-
-          {/* Demo Sandbox Quick Link */}
+        {/* Subsystem Telemetry & Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono">
+          {/* Telegram Bot Direct Pill */}
           <a
-            href="http://localhost:8000/sandbox"
+            href="https://t.me/ghost_qa_sentinel_bot"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 border border-blue-500/40 text-blue-400 hover:bg-blue-600/30 transition-colors font-sans font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0088cc]/20 border border-[#0088cc]/50 text-[#38bdf8] hover:bg-[#0088cc]/30 transition-all font-sans font-medium"
+            title="Open Telegram Sentinel Bot"
           >
-            <span>Live Sandbox Target</span>
-            <ExternalLink className="w-3 h-3" />
+            <Send className="w-3.5 h-3.5" />
+            <span>@ghost_qa_sentinel_bot</span>
           </a>
+
+          {/* Interactive Sandbox Testbench Modal Trigger */}
+          <button
+            onClick={onOpenSandboxModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25 transition-all font-sans font-medium"
+            title="Open Interactive Sandbox Target Testbench"
+          >
+            <Gamepad2 className="w-3.5 h-3.5" />
+            <span>Sandbox Testbench</span>
+          </button>
+
+          {/* Export Audit Report */}
+          <button
+            onClick={onExportReport}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sentinel-card hover:bg-sentinel-border border border-sentinel-border text-gray-200 hover:text-white transition-all font-sans"
+            title="Download Full Markdown Audit Report"
+          >
+            <FileDown className="w-3.5 h-3.5 text-sentinel-cyan" />
+            <span>Export Report</span>
+          </button>
+
+          {/* Audio FX Toggle */}
+          <button
+            onClick={toggleSound}
+            className={`p-2 rounded-lg border transition-all ${
+              soundEnabled
+                ? "bg-sentinel-card border-sentinel-cyan/40 text-sentinel-cyan"
+                : "bg-sentinel-card border-gray-800 text-gray-500"
+            }`}
+            title={soundEnabled ? "Mute Cyberpunk Audio FX" : "Unmute Audio FX"}
+          >
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+          </button>
         </div>
       </div>
     </header>
