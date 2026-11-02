@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import shutil
 import asyncio
 from datetime import datetime
 from pathlib import Path
@@ -189,6 +190,20 @@ async def execute_scan_pipeline(scan_id: str, target_url: str, github_repo: Opti
 
             # Create Incident Record
             screenshot_rel_url = f"/screenshots/{Path(raw_inc.screenshot_path).name}" if raw_inc.screenshot_path else None
+            if raw_inc.screenshot_path and Path(raw_inc.screenshot_path).exists():
+                try:
+                    fe_pub_dir = settings.BASE_DIR / "frontend" / "public" / "screenshots"
+                    fe_pub_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(raw_inc.screenshot_path, fe_pub_dir / Path(raw_inc.screenshot_path).name)
+                except Exception:
+                    pass
+            if raw_inc.screenshot_path and Path(raw_inc.screenshot_path).exists():
+                try:
+                    fe_pub_dir = settings.BASE_DIR / "frontend" / "public" / "screenshots"
+                    fe_pub_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(raw_inc.screenshot_path, fe_pub_dir / Path(raw_inc.screenshot_path).name)
+                except Exception:
+                    pass
             
             db_incident = Incident(
                 id=raw_inc.id,
@@ -321,6 +336,13 @@ async def execute_attack_pipeline(scan_id: str, target_url: str, github_repo: Op
             )
 
             screenshot_rel_url = f"/screenshots/{Path(raw_inc.screenshot_path).name}" if raw_inc.screenshot_path else None
+            if raw_inc.screenshot_path and Path(raw_inc.screenshot_path).exists():
+                try:
+                    fe_pub_dir = settings.BASE_DIR / "frontend" / "public" / "screenshots"
+                    fe_pub_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(raw_inc.screenshot_path, fe_pub_dir / Path(raw_inc.screenshot_path).name)
+                except Exception:
+                    pass
 
             db_incident = Incident(
                 id=raw_inc.id,

@@ -93,6 +93,10 @@ class SoundFX {
     this.playBugFound();
   }
 
+  playHeal() {
+    this.playHealedChime();
+  }
+
   // Scan finished chime
   playScanComplete() {
     this.playHealedChime();

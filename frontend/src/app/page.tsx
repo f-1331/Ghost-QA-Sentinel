@@ -154,6 +154,9 @@ export default function Dashboard() {
       const savedTheme = localStorage.getItem("ghostqa_theme") as ThemeId;
       if (savedTheme) {
         setCurrentTheme(savedTheme);
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      } else {
+        document.documentElement.setAttribute("data-theme", "cyberpunk");
       }
 
       const savedBgEffect = localStorage.getItem("ghostqa_bg_effect") as BgEffect;
@@ -180,6 +183,8 @@ export default function Dashboard() {
 
   const handleSelectTheme = (theme: ThemeId) => {
     setCurrentTheme(theme);
+    soundFX.playClick();
+    document.documentElement.setAttribute("data-theme", theme);
     try {
       localStorage.setItem("ghostqa_theme", theme);
     } catch (e) {}
@@ -511,6 +516,45 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Quick Theme Switcher Bar */}
+        <div className="bg-sentinel-surface border border-sentinel-border rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar shadow-md">
+          <div className="flex items-center gap-2 shrink-0 text-xs font-mono text-gray-400">
+            <Palette className="w-3.5 h-3.5 text-sentinel-cyan" />
+            <span className="hidden sm:inline">Sayt Dizayni:</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto no-scrollbar">
+            {AVAILABLE_THEMES.map((theme) => {
+              const isActive = currentTheme === theme.id;
+              return (
+                <button
+                  key={theme.id}
+                  onClick={() => handleSelectTheme(theme.id)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all border ${
+                    isActive
+                      ? "bg-sentinel-card border-sentinel-cyan text-white shadow-sm"
+                      : "bg-transparent border-transparent text-gray-400 hover:text-gray-200 hover:bg-sentinel-card/50"
+                  }`}
+                  title={theme.name}
+                >
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: theme.accent }}
+                  />
+                  <span>{theme.name.split(" ")[0]}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setIsThemeModalOpen(true)}
+            className="text-[11px] font-mono text-sentinel-cyan hover:underline shrink-0"
+          >
+            Mavzular & Fon →
+          </button>
+        </div>
+
         {/* Global Real-time Stats Cards */}
         <StatsCards
           totalScans={totalScans}
@@ -724,6 +768,7 @@ export default function Dashboard() {
                 onApplyPatch={handleApplyPatch}
                 onCreatePR={handleCreatePR}
                 lang={lang}
+                backendUrl={BACKEND_URL}
               />
             ))
           )}

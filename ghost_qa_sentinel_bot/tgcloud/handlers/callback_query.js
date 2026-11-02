@@ -248,4 +248,29 @@ export default async function (query, ctx) {
     });
     return;
   }
+
+  // 8. Themes
+  if (data === 'action:themes') {
+    await api.sendMessage({
+      chat_id: chatId,
+      text: 
+        `🎨 <b>SAYT VIZUAL DIZAYNLARI:</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `• 💎 <b>Cyberpunk Obsidian:</b> Moviy neon\n` +
+        `• 🟢 <b>Matrix Terminal:</b> Yashil matrisa\n` +
+        `• 🟣 <b>Synthwave 80s:</b> Pushti-binafsha retro\n` +
+        `• 🔴 <b>Blood Moon Alert:</b> Qizil xavfsizlik\n` +
+        `• 🟡 <b>Solar Flare Gold:</b> Quyosh nuri oltin\n` +
+        `• 🔵 <b>Midnight Navy:</b> Fazoviy ko'k\n` +
+        `• ⚪ <b>Stealth Nordic:</b> Minimalist titan\n\n` +
+        `<i>Istalgan birini tanlash uchun Veb Dashboardga o'ting:</i>`,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '🎨 Dizaynni Saytda O\'zgartirish', web_app: { url: DASHBOARD_URL } }]
+        ]
+      }
+    });
+    return;
+  }
 }

@@ -323,6 +323,109 @@ function logToConsole(message, type = 'info') {
                 "diff": self._generate_diff(target_file, original_code, fixed_code)
             }
 
+        # Security Vulnerability 3: SQL Injection & ORM Query Escaping
+        elif "sqli" in bug_type.lower() or "sql" in err_lower:
+            target_file = "backend/database.py"
+            original_code = """# Insecure raw query concatenation
+def query_user_records(raw_search: str):
+    cursor.execute(f"SELECT * FROM incidents WHERE message LIKE '%{raw_search}%'")
+    return cursor.fetchall()"""
+            fixed_code = """# Ghost-QA Autonomous Security Guard: Parameterized Prepared Statements
+def query_user_records(raw_search: str):
+    cursor.execute("SELECT * FROM incidents WHERE message LIKE :search", {"search": f"%{raw_search}%"})
+    return cursor.fetchall()"""
+            return {
+                "root_cause_en": "Raw string concatenation detected in SQL query formulation. Neutralized by converting query parameters to parameterized prepared statements (bind parameters).",
+                "root_cause_uz": "SQL so'rovida qatorlarni to'g'ridan-to'g'ri ulash (string concatenation) orqali SQL Injection zaifligi yuzaga kelgan. So'rov parameterized prepared statement ga o'tkazilib, to'liq xavfsiz holatga keltirildi.",
+                "severity": "CRITICAL",
+                "target_file": target_file,
+                "original_code": original_code,
+                "fixed_code": fixed_code,
+                "diff": self._generate_diff(target_file, original_code, fixed_code)
+            }
+
+        # Security Vulnerability 4: Path Traversal & Secret Exposure
+        elif "path_traversal" in bug_type.lower() or "secret" in err_lower or "exposure" in err_lower:
+            target_file = "backend/main.py"
+            original_code = """# Public static file exposure without boundary check
+@app.get("/{file_path:path}")
+def serve_public_file(file_path: str):
+    return FileResponse(file_path)"""
+            fixed_code = """# Ghost-QA Autonomous Security Guard: Chrooted Path Traversal Blocker
+@app.get("/{file_path:path}")
+def serve_public_file(file_path: str):
+    target = (BASE_DIR / file_path).resolve()
+    if not str(target).startswith(str(BASE_DIR.resolve())) or any(p.startswith(".") for p in target.parts):
+        raise HTTPException(status_code=403, detail="Access denied: Restricted boundary.")
+    return FileResponse(target)"""
+            return {
+                "root_cause_en": "Unconstrained relative path resolution allowed directory traversal outside root directory. Blocked by verifying path containment within `BASE_DIR` and denying hidden dotfile access.",
+                "root_cause_uz": "Nisbiy yo'llar orqali serverning ildiz papkasidan tashqaridagi maxfiy fayllarni (.env, .git) o'qish imkoniyati bor edi. Yo'lni BASE_DIR ichida cheklovchi xavfsizlik filtri qo'yildi.",
+                "severity": "CRITICAL",
+                "target_file": target_file,
+                "original_code": original_code,
+                "fixed_code": fixed_code,
+                "diff": self._generate_diff(target_file, original_code, fixed_code)
+            }
+
+        # Security Vulnerability 5: Concurrency Burst Flood / Rate Limiting
+        elif "concurrency" in bug_type.lower() or "burst" in err_lower or "flood" in err_lower:
+            target_file = "backend/main.py"
+            original_code = """# Direct request handling without token bucket throttling
+@app.middleware("http")
+async def process_request(request, call_next):
+    return await call_next(request)"""
+            fixed_code = """# Ghost-QA Autonomous Guard: Token Bucket Throttling & Adaptive Rate Limiter
+from collections import defaultdict
+import time
+
+request_history = defaultdict(list)
+
+@app.middleware("http")
+async def rate_limiting_middleware(request, call_next):
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    request_history[client_ip] = [t for t in request_history[client_ip] if now - t < 1.0]
+    if len(request_history[client_ip]) > 30: # 30 req/sec limit
+        return JSONResponse(status_code=429, content={"error": "Too Many Requests", "retry_after": 1})
+    request_history[client_ip].append(now)
+    return await call_next(request)"""
+            return {
+                "root_cause_en": "Server lacks request rate-limiting and connection pooling under heavy asynchronous request floods. Added a high-performance in-memory Token Bucket throttle returning HTTP 429.",
+                "root_cause_uz": "Server parallel ko'p so'rovlar yuborilganda ortiqcha yuklanish tufayli HTTP 500 qaytardi. 30 req/sec chegarasiga ega Token Bucket tezkor tezlik cheklovi (rate-limiter) joriy etildi.",
+                "severity": "HIGH",
+                "target_file": target_file,
+                "original_code": original_code,
+                "fixed_code": fixed_code,
+                "diff": self._generate_diff(target_file, original_code, fixed_code)
+            }
+
+        # Security Vulnerability 6: Server Version Fingerprint Disclosure
+        elif "fingerprint" in bug_type.lower() or "server_version" in bug_type.lower():
+            target_file = "backend/main.py"
+            original_code = """# Standard response headers
+@app.middleware("http")
+async def headers_pass(request, call_next):
+    return await call_next(request)"""
+            fixed_code = """# Ghost-QA Autonomous Security Guard: Server Fingerprint Masking
+@app.middleware("http")
+async def sanitize_fingerprint_headers(request, call_next):
+    response = await call_next(request)
+    if "server" in response.headers:
+        response.headers["server"] = "Sentinel-WAF"
+    if "x-powered-by" in response.headers:
+        del response.headers["x-powered-by"]
+    return response"""
+            return {
+                "root_cause_en": "Underlying server framework and version headers exposed (`Server`, `X-Powered-By`). Replaced with a generic masked token to prevent automated target fingerprinting.",
+                "root_cause_uz": "Server sarlavhalarida freymvork va dastur versiyasi ko'rinib turgan edi. Avtomatlashtirilgan xakerlik skanerlaridan himoyalanish uchun Server va X-Powered-By sarlavhalari niqoblandi.",
+                "severity": "MEDIUM",
+                "target_file": target_file,
+                "original_code": original_code,
+                "fixed_code": fixed_code,
+                "diff": self._generate_diff(target_file, original_code, fixed_code)
+            }
+
         # Generic Fallback
         target_file = "demo-broken-app/app.js"
         original_code = "// Uncaught dynamic execution fault"

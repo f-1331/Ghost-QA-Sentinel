@@ -8,6 +8,7 @@ interface DiffViewerProps {
   originalCode?: string;
   fixedCode?: string;
   unifiedDiff?: string;
+  diff?: string;
 }
 
 export const DiffViewer: React.FC<DiffViewerProps> = ({
@@ -15,12 +16,14 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
   originalCode = "",
   fixedCode = "",
   unifiedDiff = "",
+  diff = "",
 }) => {
+  const activeDiff = unifiedDiff || diff;
   const [copied, setCopied] = useState(false);
   const [mode, setMode] = useState<"side-by-side" | "patch">("side-by-side");
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(unifiedDiff || `${originalCode}\n-->\n${fixedCode}`);
+    navigator.clipboard.writeText(activeDiff || `${originalCode}\n-->\n${fixedCode}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -88,8 +91,8 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
       ) : (
         <div className="p-3 max-h-72 overflow-y-auto bg-black/40">
           <pre className="whitespace-pre-wrap leading-relaxed">
-            {unifiedDiff ? (
-              unifiedDiff.split("\n").map((line, idx) => {
+            {activeDiff ? (
+              activeDiff.split("\n").map((line, idx) => {
                 const isAdd = line.startsWith("+") && !line.startsWith("+++");
                 const isDel = line.startsWith("-") && !line.startsWith("---");
                 const isHeader = line.startsWith("@@") || line.startsWith("---") || line.startsWith("+++");

@@ -4,38 +4,110 @@
 
 :root {
   --foreground-rgb: 243, 244, 246;
-  --background-start-rgb: 8, 12, 20;
-  --background-end-rgb: 5, 8, 14;
+  --sentinel-bg: #080c14;
+  --sentinel-surface: #0f172a;
+  --sentinel-card: #131d31;
+  --sentinel-border: #1e293b;
+  --sentinel-highlight: #2d3748;
+  --sentinel-accent: #06b6d4;
+  --sentinel-purple: #8b5cf6;
+}
+
+[data-theme="cyberpunk"] {
+  --sentinel-bg: #080c14;
+  --sentinel-surface: #0f172a;
+  --sentinel-card: #131d31;
+  --sentinel-border: #1e293b;
+  --sentinel-highlight: #2d3748;
+  --sentinel-accent: #06b6d4;
+  --sentinel-purple: #8b5cf6;
+}
+
+[data-theme="matrix"] {
+  --sentinel-bg: #030804;
+  --sentinel-surface: #061409;
+  --sentinel-card: #091f0e;
+  --sentinel-border: #12381a;
+  --sentinel-highlight: #1b4f26;
+  --sentinel-accent: #10b981;
+  --sentinel-purple: #059669;
+}
+
+[data-theme="synthwave"] {
+  --sentinel-bg: #0e0720;
+  --sentinel-surface: #170c36;
+  --sentinel-card: #221250;
+  --sentinel-border: #381c7e;
+  --sentinel-highlight: #4f28b0;
+  --sentinel-accent: #ec4899;
+  --sentinel-purple: #f43f5e;
+}
+
+[data-theme="bloodmoon"] {
+  --sentinel-bg: #140505;
+  --sentinel-surface: #200a0a;
+  --sentinel-card: #2e0f0f;
+  --sentinel-border: #4d1717;
+  --sentinel-highlight: #6e2222;
+  --sentinel-accent: #ef4444;
+  --sentinel-purple: #dc2626;
+}
+
+[data-theme="solar"] {
+  --sentinel-bg: #120e03;
+  --sentinel-surface: #1d1706;
+  --sentinel-card: #2a2109;
+  --sentinel-border: #47380f;
+  --sentinel-highlight: #634f16;
+  --sentinel-accent: #eab308;
+  --sentinel-purple: #f59e0b;
+}
+
+[data-theme="midnight"] {
+  --sentinel-bg: #030712;
+  --sentinel-surface: #09132b;
+  --sentinel-card: #0f1e42;
+  --sentinel-border: #1c336e;
+  --sentinel-highlight: #274799;
+  --sentinel-accent: #3b82f6;
+  --sentinel-purple: #6366f1;
+}
+
+[data-theme="nordic"] {
+  --sentinel-bg: #0b0f19;
+  --sentinel-surface: #111827;
+  --sentinel-card: #1f2937;
+  --sentinel-border: #374151;
+  --sentinel-highlight: #4b5563;
+  --sentinel-accent: #38bdf8;
+  --sentinel-purple: #94a3b8;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      rgb(var(--background-start-rgb)),
-      rgb(var(--background-end-rgb))
-    );
+  background-color: var(--sentinel-bg);
   min-height: 100vh;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom Scrollbar for Hacker Console & Feeds */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #080c14;
+  background: var(--sentinel-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--sentinel-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #06b6d4;
+  background: var(--sentinel-accent);
 }
 
 /* Code Diff Styling */
