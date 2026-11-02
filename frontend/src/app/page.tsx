@@ -21,8 +21,11 @@ import { StatsCards } from "@/components/StatsCards";
 import { TerminalLogs, LogMessage } from "@/components/TerminalLogs";
 import { IncidentCard, IncidentData } from "@/components/IncidentCard";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const WS_URL = BACKEND_URL.replace(/^http/, "ws");
+
 export default function Dashboard() {
-  const [targetUrl, setTargetUrl] = useState("http://localhost:8000/sandbox");
+  const [targetUrl, setTargetUrl] = useState(`${BACKEND_URL}/sandbox`);
   const [githubRepo, setGithubRepo] = useState("ghost-qa-sentinel/cybermart-portal");
   const [scanMode, setScanMode] = useState("CHAOS_MONKEY");
   const [isScanning, setIsScanning] = useState(false);
@@ -48,7 +51,7 @@ export default function Dashboard() {
 
   const fetchHealth = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/health");
+      const res = await fetch(`${BACKEND_URL}/api/health`);
       if (res.ok) {
         const data = await res.json();
         setSystemHealth(data);
@@ -60,7 +63,7 @@ export default function Dashboard() {
 
   const fetchRecentIncidents = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/incidents");
+      const res = await fetch(`${BACKEND_URL}/api/incidents`);
       if (res.ok) {
         const data: IncidentData[] = await res.json();
         setIncidents(data);
@@ -89,7 +92,7 @@ export default function Dashboard() {
     ]);
 
     try {
-      const res = await fetch("http://localhost:8000/api/scans/start", {
+      const res = await fetch(`${BACKEND_URL}/api/scans/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -129,7 +132,7 @@ export default function Dashboard() {
       wsRef.current.close();
     }
 
-    const ws = new WebSocket(`ws://localhost:8000/ws/scan/${scanId}`);
+    const ws = new WebSocket(`${WS_URL}/ws/scan/${scanId}`);
     wsRef.current = ws;
 
     ws.onmessage = (event) => {
@@ -183,7 +186,7 @@ export default function Dashboard() {
   // Reset Demo Sandbox Target
   const handleResetSandbox = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/sandbox/reset", {
+      const res = await fetch(`${BACKEND_URL}/api/sandbox/reset`, {
         method: "POST",
       });
       if (res.ok) {
@@ -206,7 +209,7 @@ export default function Dashboard() {
   // Apply Self-Healing Patch Locally
   const handleApplyPatch = async (incidentId: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/incidents/${incidentId}/apply-local-patch`, {
+      const res = await fetch(`${BACKEND_URL}/api/incidents/${incidentId}/apply-local-patch`, {
         method: "POST",
       });
       const data = await res.json();
@@ -233,7 +236,7 @@ export default function Dashboard() {
   // Create GitHub PR
   const handleCreatePR = async (incidentId: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/incidents/${incidentId}/create-pr`, {
+      const res = await fetch(`${BACKEND_URL}/api/incidents/${incidentId}/create-pr`, {
         method: "POST",
       });
       const data = await res.json();
@@ -304,7 +307,7 @@ export default function Dashboard() {
                     Target Application URL
                   </span>
                   <button
-                    onClick={() => setTargetUrl("http://localhost:8000/sandbox")}
+                    onClick={() => setTargetUrl(`${BACKEND_URL}/sandbox`)}
                     className="text-[10px] text-sentinel-cyan hover:underline lowercase font-normal"
                   >
                     use demo sandbox
@@ -357,8 +360,8 @@ export default function Dashboard() {
               {/* Quick Launch on Sandbox */}
               <button
                 onClick={() => {
-                  setTargetUrl("http://localhost:8000/sandbox");
-                  handleStartScan("http://localhost:8000/sandbox");
+                  setTargetUrl(`${BACKEND_URL}/sandbox`);
+                  handleStartScan(`${BACKEND_URL}/sandbox`);
                 }}
                 disabled={isScanning}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-sentinel-cyan via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-sentinel-cyan/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
@@ -442,7 +445,7 @@ export default function Dashboard() {
                 No active defects match the current filter. Launch a chaos scan against the built-in sandbox or enter a custom target to test.
               </p>
               <button
-                onClick={() => handleStartScan("http://localhost:8000/sandbox")}
+                onClick={() => handleStartScan(`${BACKEND_URL}/sandbox`)}
                 className="mt-2 px-4 py-2 rounded-xl bg-sentinel-card hover:bg-sentinel-border text-xs font-mono text-sentinel-cyan border border-sentinel-cyan/30"
               >
                 Scan Built-in Demo App →
