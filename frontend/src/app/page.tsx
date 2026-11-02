@@ -35,6 +35,9 @@ import { Language, translations } from "../components/i18n";
 import { BackgroundCanvas, BgEffect } from "../components/BackgroundCanvas";
 import { OnboardingModal } from "../components/OnboardingModal";
 import { ThemeCustomizer, ThemeId, AVAILABLE_THEMES } from "../components/ThemeCustomizer";
+import { SentinelCopilot } from "../components/SentinelCopilot";
+import { TimeTravelDebugger } from "../components/TimeTravelDebugger";
+import { CiCdIntegrationModal } from "../components/CiCdIntegrationModal";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const WS_URL = BACKEND_URL.replace(/^http/, "ws");
@@ -115,6 +118,7 @@ export default function Dashboard() {
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isSandboxModalOpen, setIsSandboxModalOpen] = useState(false);
+  const [isCiCdModalOpen, setIsCiCdModalOpen] = useState(false);
 
   const [targetUrl, setTargetUrl] = useState(`${BACKEND_URL}/sandbox`);
   const [githubRepo, setGithubRepo] = useState("f-1331/Ghost-QA-Sentinel");
@@ -450,6 +454,7 @@ export default function Dashboard() {
         onOpenGuideModal={() => setIsGuideModalOpen(true)}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
         onOpenSandboxModal={() => setIsSandboxModalOpen(true)}
+        onOpenCiCdModal={() => setIsCiCdModalOpen(true)}
         onExportReport={handleExportReport}
         currentTheme={currentTheme}
       />
@@ -628,6 +633,9 @@ export default function Dashboard() {
           lang={lang}
         />
 
+        {/* Visual Action Replay & Time-Travel Debugger */}
+        <TimeTravelDebugger lang={lang} />
+
         {/* Discovered Incidents Section */}
         <section className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -761,6 +769,19 @@ export default function Dashboard() {
         isOpen={isSandboxModalOpen}
         onClose={() => setIsSandboxModalOpen(false)}
         backendUrl={BACKEND_URL}
+      />
+
+      {/* CI/CD Integration Modal */}
+      <CiCdIntegrationModal
+        isOpen={isCiCdModalOpen}
+        onClose={() => setIsCiCdModalOpen(false)}
+        lang={lang}
+      />
+
+      {/* Floating Sentinel AI QA Copilot */}
+      <SentinelCopilot
+        backendUrl={BACKEND_URL}
+        lang={lang}
       />
 
     </div>

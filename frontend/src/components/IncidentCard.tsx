@@ -11,7 +11,10 @@ import {
   Eye, 
   Wrench, 
   AlertTriangle,
-  Code
+  Code,
+  FlaskConical,
+  Copy,
+  Check
 } from "lucide-react";
 import { DiffViewer } from "./DiffViewer";
 import { Language, translations } from "./i18n";
@@ -51,9 +54,29 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
   lang = "uz"
 }) => {
   const [showScreenshotModal, setShowScreenshotModal] = useState(false);
+  const [showTestSpec, setShowTestSpec] = useState(false);
+  const [copiedTest, setCopiedTest] = useState(false);
   const [isPatching, setIsPatching] = useState(false);
   const [isCreatingPR, setIsCreatingPR] = useState(false);
   const t = translations[lang] || translations.uz;
+
+  const generatedPlaywrightSpec = `// Playwright Regression Test Guard for ${incident.id}
+import { test, expect } from '@playwright/test';
+
+test('Guard against regression: ${incident.bug_type} on ${incident.selector || "target"}', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', msg => {
+    if (msg.type() === 'error') errors.push(msg.text());
+  });
+
+  await page.goto('/sandbox');
+  await page.waitForSelector('${incident.selector || "body"}');
+  await page.click('${incident.selector || "body"}');
+  await page.waitForTimeout(400);
+
+  // Assert zero runtime unhandled exceptions
+  expect(errors).toHaveLength(0);
+});`;
 
   const getSeverityBadge = (sev: string) => {
     switch (sev.toUpperCase()) {
@@ -251,6 +274,43 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
             unifiedDiff={incident.diff}
           />
         )}
+
+        {/* Automated Regression Test Generator Section */}
+        <div className="bg-[#080d18] border border-sentinel-border rounded-xl p-3.5 space-y-2">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                soundFX.playClick();
+                setShowTestSpec(!showTestSpec);
+              }}
+              className="flex items-center gap-2 text-xs font-mono font-bold text-sentinel-cyan hover:underline"
+            >
+              <FlaskConical className="w-4 h-4 text-sentinel-cyan" />
+              <span>{showTestSpec ? "Yopish" : "🧪 Avtomatlashtirilgan Regressiya Testini Ko'rish (Playwright Spec)"}</span>
+            </button>
+
+            {showTestSpec && (
+              <button
+                onClick={() => {
+                  soundFX.playClick();
+                  navigator.clipboard.writeText(generatedPlaywrightSpec);
+                  setCopiedTest(true);
+                  setTimeout(() => setCopiedTest(false), 2000);
+                }}
+                className="flex items-center gap-1 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-sentinel-card hover:bg-sentinel-border border border-sentinel-border text-gray-200"
+              >
+                {copiedTest ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-sentinel-cyan" />}
+                <span>{copiedTest ? "Nusxalandi!" : "Testni Nusxalash"}</span>
+              </button>
+            )}
+          </div>
+
+          {showTestSpec && (
+            <pre className="bg-black/60 border border-gray-800 rounded-lg p-3 text-[11px] font-mono text-cyan-300 overflow-x-auto leading-relaxed">
+              {generatedPlaywrightSpec}
+            </pre>
+          )}
+        </div>
 
         {/* 1-Click Action Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-sentinel-border">

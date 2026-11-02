@@ -17,7 +17,8 @@ import {
   BookOpen,
   Palette,
   Globe,
-  Sparkles
+  Sparkles,
+  Workflow
 } from "lucide-react";
 import { soundFX } from "./SoundEffects";
 import { Language, translations } from "./i18n";
@@ -36,6 +37,7 @@ interface NavbarProps {
   onOpenGuideModal: () => void;
   onOpenThemeModal: () => void;
   onOpenSandboxModal: () => void;
+  onOpenCiCdModal: () => void;
   onExportReport: () => void;
   currentTheme: ThemeId;
 }
@@ -47,6 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenGuideModal,
   onOpenThemeModal,
   onOpenSandboxModal,
+  onOpenCiCdModal,
   onExportReport,
   currentTheme
 }) => {
@@ -153,6 +156,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Gamepad2 className="w-3.5 h-3.5" />
             <span>{t.sandboxBtn}</span>
+          </button>
+
+          {/* CI/CD Pipeline Automation Trigger */}
+          <button
+            onClick={() => {
+              soundFX.playClick();
+              onOpenCiCdModal();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/25 transition-all font-sans font-medium"
+            title="CI/CD GitHub Actions & Webhook Setup"
+          >
+            <Workflow className="w-3.5 h-3.5" />
+            <span>CI/CD</span>
           </button>
 
           {/* Export Audit Report */}
