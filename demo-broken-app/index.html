@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberMart Sentinel Store [Chaos Target Sandbox]</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div class="brand-badge">⚠️ GHOST-QA ACTIVE CHAOS TARGET</div>
+        <h1>CyberMart Next-Gen Portal</h1>
+        <p class="subtitle">Live sandbox environment with intentional console errors, network failures, and layout blocks.</p>
+      </div>
+      <div>
+        <span style="font-size: 0.85rem; color: #10b981; background: #064e3b; padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+          SANDBOX STATUS: READY
+        </span>
+      </div>
+    </header>
+
+    <div class="card-grid">
+      <!-- Card 1: Bug 1 Checkout -->
+      <div class="card">
+        <h3>Shopping Cart (2 items)</h3>
+        <p>1x Quantum Cyberdeck v4 ($1,299)<br>1x Neural Net Access Token ($350)</p>
+        <div class="price">$1,649.00</div>
+        <button id="checkout-btn" class="btn btn-primary">
+          💳 Proceed to Checkout (Throws TypeError)
+        </button>
+      </div>
+
+      <!-- Card 2: Bug 2 Network 500 -->
+      <div class="card">
+        <h3>Warehouse Inventory</h3>
+        <p>Real-time sync with regional logistics clusters across US-East and EU-Central.</p>
+        <div class="price" style="color: #60a5fa;">Sync Status: Idle</div>
+        <button id="sync-inventory-btn" class="btn btn-warning">
+          🔄 Sync Live Stock (Returns 500 Error)
+        </button>
+      </div>
+
+      <!-- Card 3: Bug 4 Tax Calculator -->
+      <div class="card">
+        <h3>Regional Tax Estimator</h3>
+        <p>Calculates automated sales tax based on client geolocation coordinates.</p>
+        <div class="price" style="color: #f59e0b;">Tax Rate: Uncalculated</div>
+        <button id="calc-tax-btn" class="btn btn-danger">
+          📊 Calculate Tax (Throws Null Error)
+        </button>
+      </div>
+    </div>
+
+    <!-- Voucher Banner with Invisible Z-Index Overlay Bug 3 -->
+    <div class="voucher-container">
+      <div id="ghost-blocker-overlay" title="Blocked by overlay"></div>
+      <h3 style="margin-bottom: 0.5rem; color: #a5b4fc;">⚡ Flash Promotion: VIP Cyber Week</h3>
+      <p style="color: #c7d2fe; margin-bottom: 1rem; font-size: 0.9rem;">
+        Click below to claim an instant 50% discount across all catalog nodes. (Notice: Overlay blocks mouse interaction!)
+      </p>
+      <button id="claim-voucher-btn" class="btn btn-emerald" style="max-width: 300px;">
+        🎁 Claim 50% VIP Voucher
+      </button>
+    </div>
+
+    <div class="console-output">
+      <h4>Sandbox Live Console Feed</h4>
+      <div id="console-logs">
+        <div class="log-entry log-info">[CyberMart] Sandbox initialized. Ready for Ghost-QA autonomous crawling.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

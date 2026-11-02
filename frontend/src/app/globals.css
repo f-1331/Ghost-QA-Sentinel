@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 243, 244, 246;
+  --background-start-rgb: 8, 12, 20;
+  --background-end-rgb: 5, 8, 14;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb))
+    );
+  min-height: 100vh;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom Scrollbar for Hacker Console & Feeds */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080c14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+/* Code Diff Styling */
+.diff-del {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-left: 3px solid #ef4444;
+}
+
+.diff-add {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border-left: 3px solid #10b981;
+}
+
+/* Radar pulse animation */
+@keyframes radar-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.radar-sweep {
+  animation: radar-spin 4s linear infinite;
+}

@@ -1,0 +1,29 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.sqlite3
+*.db
+backend/screenshots/
+
+# Node
+node_modules/
+.next/
+out/
+build/
+dist/
+*.log
+
+# Env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS
+Thumbs.db
+.DS_Store
