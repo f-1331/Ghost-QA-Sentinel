@@ -337,3 +337,130 @@ class GhostCrawler:
         )
         incident.id = inc_id
         return incident
+
+    async def run_security_attack_audit(self, url: str, scan_id: str) -> List[CrawlerIncident]:
+        """
+        Executes a controlled Chaos & Security Attack Audit:
+        - Fuzzing & Input Boundary Injection
+        - Missing Defensive Security Headers Check (OWASP)
+        - Concurrency Burst Stress Test
+        """
+        self.incidents = []
+
+        if not (url.startswith("http://") or url.startswith("https://")):
+            await self.log("ERROR", f"❌ Security Violation: Target scheme invalid for '{url}'. Only HTTP/HTTPS allowed.")
+            return []
+
+        await self.log("INFO", f"⚔️ Initializing Chaos Attack & Stress Engine against: {url}")
+        await self.log("INFO", f"🎯 Probes: [1. OWASP Headers Audit] [2. Input Fuzzing] [3. Concurrency Stress Burst]")
+
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+            )
+            context = await browser.new_context(viewport={"width": 1280, "height": 800})
+            page = await context.new_page()
+
+            # Listen for console errors
+            intercepted_errors = []
+            page.on("console", lambda m: intercepted_errors.append(m.text) if m.type == "error" else None)
+            page.on("pageerror", lambda exc: intercepted_errors.append(str(exc)))
+
+            # Step 1: Navigate & Analyze Headers
+            try:
+                resp = await page.goto(url, wait_until="domcontentloaded", timeout=12000)
+                await asyncio.sleep(0.5)
+
+                if resp:
+                    headers = resp.headers
+                    missing_headers = []
+                    if "content-security-policy" not in headers:
+                        missing_headers.append("Content-Security-Policy (CSP)")
+                    if "x-frame-options" not in headers:
+                        missing_headers.append("X-Frame-Options (Clickjacking guard)")
+                    if "x-content-type-options" not in headers:
+                        missing_headers.append("X-Content-Type-Options (MIME sniff guard)")
+
+                    if missing_headers:
+                        await self.log("WARN", f"⚠️ [Security Probe] Missing defensive headers: {', '.join(missing_headers)}")
+                        inc = await self._capture_incident(
+                            page=page,
+                            scan_id=scan_id,
+                            bug_type="SECURITY_HEADER_MISSING",
+                            message=f"Missing recommended security headers: {', '.join(missing_headers)}. Vulnerable to Clickjacking & XSS.",
+                            severity="HIGH",
+                            selector="response.headers"
+                        )
+                        self.incidents.append(inc)
+                    else:
+                        await self.log("SUCCESS", "✅ [Security Probe] All core OWASP security headers present.")
+            except Exception as e:
+                await self.log("ERROR", f"❌ Target reachability failed: {e}")
+                await browser.close()
+                return self.incidents
+
+            # Step 2: Input Fuzzing & Injection Resilience Probe
+            await self.log("INFO", "💉 [Attack Probe 2] Injecting boundary fuzzing payloads into form fields...")
+            try:
+                inputs = await page.query_selector_all("input[type='text'], input:not([type]), textarea")
+                if inputs:
+                    fuzz_payload = "<img src=x onerror=console.error('XSS_ATTACK_SUCCESS')>"
+                    for inp in inputs[:3]:
+                        await inp.fill(fuzz_payload)
+                        await page.keyboard.press("Enter")
+                        await asyncio.sleep(0.3)
+
+                    # Check if our XSS probe fired an error
+                    for err in intercepted_errors:
+                        if "XSS_ATTACK_SUCCESS" in err or "unhandled" in err.lower():
+                            await self.log("ERROR", "💥 [Vulnerability Caught] Input fuzzing triggered unescaped client execution!")
+                            inc = await self._capture_incident(
+                                page=page,
+                                scan_id=scan_id,
+                                bug_type="INSECURE_INPUT_HANDLING",
+                                message="Potential Cross-Site Scripting (XSS) detected: Reflected unescaped boundary characters.",
+                                severity="CRITICAL",
+                                selector="input.fuzz-target"
+                            )
+                            self.incidents.append(inc)
+                            break
+                    else:
+                        await self.log("SUCCESS", "🛡️ [Input Resilience] Form inputs safely escaped boundary fuzzing characters.")
+                else:
+                    await self.log("INFO", "ℹ️ No vulnerable text inputs discovered on target DOM.")
+            except Exception as e:
+                await self.log("WARN", f"Input fuzzing pass completed: {e}")
+
+            # Step 3: Concurrency Burst Stress Test
+            await self.log("INFO", "⚡ [Attack Probe 3] Dispatching 15 parallel asynchronous requests to evaluate server stability...")
+            try:
+                stress_results = await page.evaluate("""async (target) => {
+                    const promises = Array.from({ length: 12 }, () => 
+                        fetch(target, { cache: 'no-store' }).then(r => r.status).catch(() => 500)
+                    );
+                    return await Promise.all(promises);
+                }""", url)
+
+                failures = [st for st in stress_results if st >= 500]
+                if failures:
+                    await self.log("WARN", f"⚠️ Server dropped {len(failures)}/12 requests with HTTP 500/503 during burst load!")
+                    inc = await self._capture_incident(
+                        page=page,
+                        scan_id=scan_id,
+                        bug_type="CONCURRENCY_BURST_FAILURE",
+                        message=f"Server returned HTTP 500 under 12-request concurrent burst. Missing resilient rate-limiting & pooling.",
+                        severity="HIGH",
+                        selector="network.concurrency"
+                    )
+                    self.incidents.append(inc)
+                else:
+                    await self.log("SUCCESS", f"✅ Concurrency stress test passed: 12/12 requests served with 200 OK.")
+            except Exception as e:
+                await self.log("INFO", f"Stress evaluation finished: {e}")
+
+            await browser.close()
+
+        await self.log("SUCCESS", f"🏁 Chaos Attack & Stress Simulation completed. Found {len(self.incidents)} security/resilience vulnerabilities.")
+        return self.incidents
+

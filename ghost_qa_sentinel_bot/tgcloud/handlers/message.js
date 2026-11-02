@@ -21,6 +21,7 @@ export default async function (message, ctx) {
       `Ghost-QA Sentinel — web ilovalaringizni inson aralashuvisiz, <b>avtonom tarzda</b> tekshiruvchi va xatolarni <b>Google Gemini 3.8 Flash</b> orqali o'zi tuzatuvchi robot tizimdir.\n\n` +
       `<b>⚡ Asosiy Buyruqlar:</b>\n` +
       `• <code>/scan</code> — Chaos Monkey skanini ishga tushirish\n` +
+      `• <code>/attack [url]</code> — Saytga chaos & xavfsizlik hujumi sinovi\n` +
       `• <code>/ask [savol]</code> — AI QA muhandisidan yordam so'rash\n` +
       `• <code>/testgen</code> — Avtomatlashtirilgan Playwright regressiya testlari\n` +
       `• <code>/guide</code> — Tizim qanday ishlashi bo'yicha to'liq qo'llanma\n` +
@@ -41,7 +42,8 @@ export default async function (message, ctx) {
             { text: '📱 Dashboard (Telegram WebApp)', web_app: { url: DASHBOARD_URL } }
           ],
           [
-            { text: '🚀 Demo Sandboxni Skan Qilish', callback_data: 'action:scan_sandbox' }
+            { text: '🚀 Demo Sandboxni Skan Qilish', callback_data: 'action:scan_sandbox' },
+            { text: '⚔️ Chaos Attackbench', callback_data: 'action:attackbench' }
           ],
           [
             { text: '📖 Qo\'llanma', callback_data: 'action:guide' },
@@ -64,7 +66,31 @@ export default async function (message, ctx) {
     return;
   }
 
-  // 2. /ask Command (AI Copilot in Telegram)
+  // 2. /attack Command (Chaos & Security Attackbench)
+  if (text.startsWith('/attack')) {
+    const target = text.replace('/attack', '').trim() || 'http://localhost:8000/sandbox';
+    await api.sendMessage({
+      chat_id: chatId,
+      text: 
+        `⚔️ <b>CHAOS & SECURITY ATTACKBENCH ISHGA TUSHDI!</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `🎯 <b>Nishon:</b> <code>${target}</code>\n` +
+        `🔥 <b>Hujum Probelari:</b>\n` +
+        `• 💉 <i>XSS & Input Boundary Fuzzing</i>\n` +
+        `• 🛡️ <i>OWASP Security Headers (CSP, FrameGuard)</i>\n` +
+        `• ⚡ <i>15x Concurrency Burst Stress</i>\n\n` +
+        `<i>Agent saytga hujum o'tkazmoqda va topilgan xatoliklarni Gemini AI orqali avtomatik tuzatmoqda...</i>`,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '📱 Dashboard da Jonli Kuzatish', web_app: { url: DASHBOARD_URL } }]
+        ]
+      }
+    });
+    return;
+  }
+
+  // 3. /ask Command (AI Copilot in Telegram)
   if (text.startsWith('/ask')) {
     const query = text.replace('/ask', '').trim();
     if (!query) {

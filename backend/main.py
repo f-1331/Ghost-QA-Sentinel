@@ -274,6 +274,136 @@ async def execute_scan_pipeline(scan_id: str, target_url: str, github_repo: Opti
         db.close()
 
 # ==========================================
+# Chaos & Security Attack Pipeline
+# ==========================================
+async def execute_attack_pipeline(scan_id: str, target_url: str, github_repo: Optional[str]):
+    from .database import SessionLocal
+    db = SessionLocal()
+    scan = db.query(Scan).filter(Scan.id == scan_id).first()
+    if not scan:
+        db.close()
+        return
+
+    scan.status = "ATTACKING"
+    db.commit()
+
+    async def log_callback(level: str, message: str):
+        log_entry = ScanLog(scan_id=scan_id, level=level, message=message, timestamp=datetime.utcnow())
+        db.add(log_entry)
+        db.commit()
+        await manager.broadcast(scan_id, {
+            "type": "LOG",
+            "level": level,
+            "message": message,
+            "timestamp": datetime.utcnow().strftime("%H:%M:%S")
+        })
+
+    crawler = GhostCrawler(log_callback=log_callback)
+
+    try:
+        await log_callback("WARN", f"⚔️ [ATTACKBENCH] Commencing Chaos Stress & Vulnerability Probes against: {target_url}")
+
+        raw_incidents = await crawler.run_security_attack_audit(url=target_url, scan_id=scan_id)
+        scan.total_bugs = len(raw_incidents)
+        db.commit()
+
+        healed_count = 0
+        for i, raw_inc in enumerate(raw_incidents):
+            await log_callback("HEAL", f"🧠 [AI HEALER] Neutralizing Security Vulnerability {i+1}/{len(raw_incidents)}: {raw_inc.bug_type}")
+
+            fix_data = await healer.diagnose_and_heal(
+                bug_type=raw_inc.bug_type,
+                error_message=raw_inc.message,
+                stack_trace=raw_inc.stack_trace,
+                selector=raw_inc.selector,
+                dom_context=raw_inc.dom_context,
+                url=raw_inc.url
+            )
+
+            screenshot_rel_url = f"/screenshots/{Path(raw_inc.screenshot_path).name}" if raw_inc.screenshot_path else None
+
+            db_incident = Incident(
+                id=raw_inc.id,
+                scan_id=scan_id,
+                bug_type=raw_inc.bug_type,
+                severity=fix_data.get("severity", raw_inc.severity),
+                message=raw_inc.message,
+                stack_trace=raw_inc.stack_trace,
+                url=raw_inc.url,
+                selector=raw_inc.selector,
+                dom_context=raw_inc.dom_context,
+                screenshot_path=raw_inc.screenshot_path,
+                screenshot_url=screenshot_rel_url,
+                target_file=fix_data.get("target_file"),
+                original_code=fix_data.get("original_code"),
+                fixed_code=fix_data.get("fixed_code"),
+                diff=fix_data.get("diff"),
+                root_cause_en=fix_data.get("root_cause_en"),
+                root_cause_uz=fix_data.get("root_cause_uz"),
+                status="HEALING",
+                created_at=datetime.utcnow()
+            )
+            db.add(db_incident)
+            db.commit()
+            healed_count += 1
+
+            await log_callback("SUCCESS", f"✨ Generated Security Patch for {fix_data.get('target_file')}: {fix_data.get('root_cause_en', '')[:70]}...")
+
+            await telegram_bot.send_incident_alert(
+                incident_id=db_incident.id,
+                bug_type=db_incident.bug_type,
+                severity=db_incident.severity,
+                url=db_incident.url,
+                error_message=db_incident.message,
+                root_cause_en=db_incident.root_cause_en or "",
+                root_cause_uz=db_incident.root_cause_uz or "",
+                target_file=db_incident.target_file,
+                screenshot_path=db_incident.screenshot_path,
+                diff=db_incident.diff
+            )
+
+            await manager.broadcast(scan_id, {
+                "type": "INCIDENT_DISCOVERED",
+                "incident": {
+                    "id": db_incident.id,
+                    "bug_type": db_incident.bug_type,
+                    "severity": db_incident.severity,
+                    "message": db_incident.message,
+                    "selector": db_incident.selector,
+                    "screenshot_url": db_incident.screenshot_url,
+                    "target_file": db_incident.target_file,
+                    "original_code": db_incident.original_code,
+                    "fixed_code": db_incident.fixed_code,
+                    "diff": db_incident.diff,
+                    "root_cause_en": db_incident.root_cause_en,
+                    "root_cause_uz": db_incident.root_cause_uz,
+                    "status": db_incident.status
+                }
+            })
+
+        scan.healed_bugs = healed_count
+        scan.status = "COMPLETED"
+        scan.completed_at = datetime.utcnow()
+        scan.summary = f"Security attack completed. {len(raw_incidents)} vulnerabilities detected and auto-healed."
+        db.commit()
+
+        await log_callback("SUCCESS", f"🛡️ Chaos Attack & Stress Simulation Complete! All {len(raw_incidents)} vulnerabilities auto-healed.")
+        await manager.broadcast(scan_id, {
+            "type": "SCAN_COMPLETED",
+            "total_bugs": len(raw_incidents),
+            "healed_bugs": healed_count
+        })
+
+    except Exception as e:
+        await log_callback("ERROR", f"❌ Attack pipeline exception: {str(e)}")
+        scan.status = "FAILED"
+        scan.summary = str(e)
+        scan.completed_at = datetime.utcnow()
+        db.commit()
+    finally:
+        db.close()
+
+# ==========================================
 # REST API Endpoints
 # ==========================================
 @app.get("/api/health")
@@ -281,12 +411,47 @@ def health_check():
     return {
         "status": "healthy",
         "service": "Ghost-QA Sentinel Core Engine",
-        "version": "2.0.0",
+        "version": "2.2.0",
+        "database_provider": settings.DATABASE_PROVIDER,
+        "neon_compatible": True,
         "gemini_active": bool(settings.GEMINI_API_KEY),
         "github_active": bool(settings.GITHUB_TOKEN),
         "telegram_active": bool(settings.TELEGRAM_BOT_TOKEN),
         "simulation_mode": settings.SIMULATION_MODE,
         "browser_engine": "Playwright Chromium (Headless)"
+    }
+
+@app.post("/api/scans/attack-stress")
+async def start_attack_stress(request: StartScanRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """
+    Launches Chaos Stress Testing, Input Fuzzing and OWASP Security Audit against target URL,
+    and automatically synthesizes AI self-healing patches for all discovered vulnerabilities.
+    """
+    scan = Scan(
+        target_url=request.target_url,
+        github_repo=request.github_repo,
+        scan_mode="CHAOS_ATTACK_STRESS",
+        status="PENDING",
+        started_at=datetime.utcnow()
+    )
+    db.add(scan)
+    db.commit()
+    db.refresh(scan)
+
+    asyncio.create_task(
+        execute_attack_pipeline(
+            scan_id=scan.id,
+            target_url=request.target_url,
+            github_repo=request.github_repo
+        )
+    )
+
+    return {
+        "scan_id": scan.id,
+        "status": "ATTACK_STARTED",
+        "target_url": scan.target_url,
+        "mode": "CHAOS_ATTACK_STRESS",
+        "websocket_url": f"/ws/scan/{scan.id}"
     }
 
 @app.post("/api/scans/start")

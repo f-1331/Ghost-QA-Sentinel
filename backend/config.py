@@ -30,8 +30,9 @@ class Settings(BaseSettings):
     # Simulation Mode
     SIMULATION_MODE: bool = True
 
-    # Database
-    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'ghost_qa.db'}"
+    # Database (Supports Neon Serverless PostgreSQL or local SQLite)
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{str(BASE_DIR / 'ghost_qa.db').replace(chr(92), '/')}")
+    DATABASE_PROVIDER: str = "Neon Tech PostgreSQL" if ("neon.tech" in os.getenv("DATABASE_URL", "") or "postgresql" in os.getenv("DATABASE_URL", "")) else "Local SQLite"
 
     # Storage paths
     SCREENSHOTS_DIR: Path = BASE_DIR / "backend" / "screenshots"

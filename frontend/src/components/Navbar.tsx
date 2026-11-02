@@ -18,7 +18,8 @@ import {
   Palette,
   Globe,
   Sparkles,
-  Workflow
+  Workflow,
+  Swords
 } from "lucide-react";
 import { soundFX } from "./SoundEffects";
 import { Language, translations } from "./i18n";
@@ -38,6 +39,7 @@ interface NavbarProps {
   onOpenThemeModal: () => void;
   onOpenSandboxModal: () => void;
   onOpenCiCdModal: () => void;
+  onOpenAttackbenchModal: () => void;
   onExportReport: () => void;
   currentTheme: ThemeId;
 }
@@ -50,6 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenThemeModal,
   onOpenSandboxModal,
   onOpenCiCdModal,
+  onOpenAttackbenchModal,
   onExportReport,
   currentTheme
 }) => {
@@ -169,6 +172,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Workflow className="w-3.5 h-3.5" />
             <span>CI/CD</span>
+          </button>
+
+          {/* Autonomous Chaos & Security Attackbench Trigger */}
+          <button
+            onClick={() => {
+              soundFX.playClick();
+              onOpenAttackbenchModal();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/40 text-rose-400 hover:bg-red-500/25 transition-all font-sans font-medium"
+            title="Autonomous Chaos & Security Attackbench"
+          >
+            <Swords className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+            <span>Attackbench</span>
           </button>
 
           {/* Export Audit Report */}

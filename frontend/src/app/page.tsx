@@ -38,6 +38,7 @@ import { ThemeCustomizer, ThemeId, AVAILABLE_THEMES } from "../components/ThemeC
 import { SentinelCopilot } from "../components/SentinelCopilot";
 import { TimeTravelDebugger } from "../components/TimeTravelDebugger";
 import { CiCdIntegrationModal } from "../components/CiCdIntegrationModal";
+import { ChaosAttackbenchModal } from "../components/ChaosAttackbenchModal";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const WS_URL = BACKEND_URL.replace(/^http/, "ws");
@@ -119,6 +120,7 @@ export default function Dashboard() {
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isSandboxModalOpen, setIsSandboxModalOpen] = useState(false);
   const [isCiCdModalOpen, setIsCiCdModalOpen] = useState(false);
+  const [isAttackbenchModalOpen, setIsAttackbenchModalOpen] = useState(false);
 
   const [targetUrl, setTargetUrl] = useState(`${BACKEND_URL}/sandbox`);
   const [githubRepo, setGithubRepo] = useState("f-1331/Ghost-QA-Sentinel");
@@ -455,6 +457,7 @@ export default function Dashboard() {
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
         onOpenSandboxModal={() => setIsSandboxModalOpen(true)}
         onOpenCiCdModal={() => setIsCiCdModalOpen(true)}
+        onOpenAttackbenchModal={() => setIsAttackbenchModalOpen(true)}
         onExportReport={handleExportReport}
         currentTheme={currentTheme}
       />
@@ -611,6 +614,15 @@ export default function Dashboard() {
                 className="px-2.5 py-1 rounded bg-[#080d18] hover:bg-sentinel-border text-gray-300 border border-sentinel-border transition-all"
               >
                 External Example
+              </button>
+              <button
+                onClick={() => {
+                  soundFX.playClick();
+                  setIsAttackbenchModalOpen(true);
+                }}
+                className="px-2.5 py-1 rounded bg-red-950/40 hover:bg-red-900/40 text-rose-400 border border-red-800/50 flex items-center gap-1 transition-all"
+              >
+                ⚔️ Attackbench
               </button>
             </div>
 
@@ -782,6 +794,14 @@ export default function Dashboard() {
       <SentinelCopilot
         backendUrl={BACKEND_URL}
         lang={lang}
+      />
+
+      {/* Autonomous Chaos & Security Attackbench Modal */}
+      <ChaosAttackbenchModal
+        isOpen={isAttackbenchModalOpen}
+        onClose={() => setIsAttackbenchModalOpen(false)}
+        lang={lang}
+        backendUrl={BACKEND_URL}
       />
 
     </div>

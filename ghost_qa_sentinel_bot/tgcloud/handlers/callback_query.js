@@ -17,6 +17,27 @@ export default async function (query, ctx) {
 
   if (!chatId) return;
 
+  if (data === 'action:attackbench') {
+    await api.sendMessage({
+      chat_id: chatId,
+      text: 
+        `⚔️ <b>CHAOS & SECURITY ATTACKBENCH:</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `Saytga 3 xil hujum sinovi o'tkaziladi:\n` +
+        `1. <b>OWASP Headers:</b> CSP va Clickjacking xatolarini aniqlash\n` +
+        `2. <b>Input Fuzzing:</b> XSS va qochirilmagan kiritmalar\n` +
+        `3. <b>Concurrency Burst:</b> 12 ta parallel so'rov bilan stress sinovi\n\n` +
+        `<i>Topilgan har qanday nuqson Gemini AI tomonidan avtomatik tuzatiladi!</i>`,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '📱 Attackbench ni Ochish', web_app: { url: DASHBOARD_URL } }]
+        ]
+      }
+    });
+    return;
+  }
+
   // 1. Scan Sandbox Action
   if (data === 'action:scan_sandbox') {
     await api.sendMessage({

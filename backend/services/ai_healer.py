@@ -239,6 +239,90 @@ You must respond in valid JSON format with the following keys:
                 "diff": self._generate_diff(target_file, original_code, fixed_code)
             }
 
+        # Security Vulnerability 1: Missing OWASP Security Headers (Clickjacking / CSP)
+        elif "security_header" in bug_type.lower() or "csp" in err_lower or "clickjacking" in err_lower or "x-frame" in err_lower:
+            target_file = "backend/main.py"
+            original_code = """# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)"""
+            fixed_code = """# CORS & OWASP Hardened Security Middleware (Ghost-QA Auto-Heal)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;"
+    return response"""
+            return {
+                "root_cause_en": "Missing defensive HTTP security headers (CSP, X-Frame-Options, X-Content-Type-Options). Vulnerable to UI redressing (Clickjacking) and MIME-type sniffing.",
+                "root_cause_uz": "Saytda muhim OWASP xavfsizlik sarlavhalari (CSP, X-Frame-Options, nosniff) yetishmayotgan edi. Clickjacking va MIME-sniffing hujumlaridan himoyalovchi xavfsizlik middleware qo'shildi.",
+                "severity": "HIGH",
+                "target_file": target_file,
+                "original_code": original_code,
+                "fixed_code": fixed_code,
+                "diff": self._generate_diff(target_file, original_code, fixed_code)
+            }
+
+        # Security Vulnerability 2: Insecure Input Handling / XSS Fuzzing Resilience
+        elif "injection" in err_lower or "xss" in err_lower or "fuzz" in err_lower or "input" in err_lower:
+            target_file = "demo-broken-app/app.js"
+            original_code = """function logToConsole(message, type = 'info') {
+  console.log(`[CyberMart] ${message}`);
+  const logContainer = document.getElementById('console-logs');
+  if (logContainer) {
+    const entry = document.createElement('div');
+    entry.className = `log-entry log-${type}`;
+    entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+    logContainer.prepend(entry);
+  }
+}"""
+            fixed_code = """// Ghost-QA Autonomous Security Guard: Strict Input Sanitization
+function sanitizeInput(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[&<>"']/g, (m) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  })[m]);
+}
+
+function logToConsole(message, type = 'info') {
+  const safeMsg = sanitizeInput(String(message));
+  console.log(`[CyberMart] ${safeMsg}`);
+  const logContainer = document.getElementById('console-logs');
+  if (logContainer) {
+    const entry = document.createElement('div');
+    entry.className = `log-entry log-${type}`;
+    entry.textContent = `[${new Date().toLocaleTimeString()}] ${safeMsg}`;
+    logContainer.prepend(entry);
+  }
+}"""
+            return {
+                "root_cause_en": "Input values were reflected without escaping boundary characters (`<`, `>`, `&`, quotes). Potential Cross-Site Scripting (XSS) vectors neutralized by adding a strict sanitization encoding layer.",
+                "root_cause_uz": "Kiritilgan matnlar to'g'ridan-to'g'ri filtrsiz qabul qilingan. XSS va script injection xavfini bartaraf etish uchun HTML belgilarni xavfsiz qochiruvchi (sanitizer) funksiya integratsiya qilindi.",
+                "severity": "CRITICAL",
+                "target_file": target_file,
+                "original_code": original_code,
+                "fixed_code": fixed_code,
+                "diff": self._generate_diff(target_file, original_code, fixed_code)
+            }
+
         # Generic Fallback
         target_file = "demo-broken-app/app.js"
         original_code = "// Uncaught dynamic execution fault"
