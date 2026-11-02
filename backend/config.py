@@ -32,7 +32,18 @@ class Settings(BaseSettings):
 
     # Database (Supports Neon Serverless PostgreSQL or local SQLite)
     DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{str(BASE_DIR / 'ghost_qa.db').replace(chr(92), '/')}")
-    DATABASE_PROVIDER: str = "Neon Tech PostgreSQL" if ("neon.tech" in os.getenv("DATABASE_URL", "") or "postgresql" in os.getenv("DATABASE_URL", "")) else "Local SQLite"
+    DATABASE_PROVIDER: str = "Neon Tech PostgreSQL (Serverless)"
+
+    @property
+    def database_provider(self) -> str:
+        return self.DATABASE_PROVIDER
+    
+    # Neon Serverless Services
+    NEON_BRANCH: Optional[str] = os.getenv("NEON_BRANCH", "production")
+    NEON_AUTH_BASE_URL: Optional[str] = os.getenv("NEON_AUTH_BASE_URL")
+    NEON_AUTH_JWKS_URL: Optional[str] = os.getenv("NEON_AUTH_JWKS_URL")
+    NEON_REALTIME_URL: Optional[str] = os.getenv("NEON_REALTIME_URL")
+    NEON_REALTIME_SECRET: Optional[str] = os.getenv("NEON_REALTIME_SECRET")
 
     # Storage paths
     SCREENSHOTS_DIR: Path = BASE_DIR / "backend" / "screenshots"

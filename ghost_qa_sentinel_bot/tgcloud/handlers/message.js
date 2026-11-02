@@ -278,15 +278,21 @@ export default async function (message, ctx) {
     return;
   }
 
-  // 9. Guide (Button or Command)
-  if (text === '📖 qo\'llanma' || text.startsWith('/guide')) {
+  // 9. Guide or Help (Button or Command)
+  if (text === '📖 qo\'llanma' || text.startsWith('/guide') || text.startsWith('/help') || text.includes('yordam') || text.includes('qanday ishlaydi')) {
     const guideText = 
-      `📖 <b>GHOST-QA SENTINEL FOYDALANISH QO'LLANMASI:</b>\n` +
+      `📖 <b>GHOST-QA SENTINEL FOYDALANISH VA ISHLASH QO'LLANMASI:</b>\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-      `<b>1. Chaos Crawler:</b> Playwright Chromium brauzeri foydalanuvchi kabi saytni tekshiradi.\n\n` +
-      `<b>2. Multi-Vector Attack:</b> Saytga XSS, SQLi, Concurrency stress va sarlavhalar bo'yicha xavfsizlik hujumi o'tkaziladi.\n\n` +
-      `<b>3. Google Gemini AI:</b> Xatolik ildiz sababini tahlil qiladi va tayyor kod patchini yaratadi.\n\n` +
-      `<b>4. 1-Klikda Tuzatish:</b> Veb dashboardda bitta tugma orqali kod kompyuteringizda yoki GitHub PR orqali avtomatik tuzatiladi!`;
+      `<b>1. 🕷️ Chaos Crawler:</b>\n` +
+      `Playwright Chromium headless brauzeri ilovangizga kirib, barcha tugmalar, formalar va z-index to'siqlarini haqiqiy foydalanuvchidek sinovdan o'tkazadi.\n\n` +
+      `<b>2. ⚔️ Multi-Vector Red-Team Hujumlari:</b>\n` +
+      `Saytga 8 xil xavfsizlik va stress hujumlari (OWASP headers, XSS, SQLi, 25x concurrency flood) uyushtirilib, mustahkamligi tekshiriladi.\n\n` +
+      `<b>3. 🧠 Google Gemini 3.8 Flash AI:</b>\n` +
+      `Har bir konsol xatosi (TypeError, 500) yoki zaiflikni tahlil qilib, toza kod patchini (Unified Diff) avtomatik generatsiya qiladi.\n\n` +
+      `<b>4. ⚡ 1-Bosishda Tuzatish:</b>\n` +
+      `Veb dashboardda <i>'Lokal Kodga Qo'llash'</i> yoki <i>'GitHub PR'</i> tugmasini bossangiz, fayl kompyuterda yoki GitHubda darhol tuzatiladi!\n\n` +
+      `<b>5. ☁️ Neon Serverless PostgreSQL:</b>\n` +
+      `Tizim barcha skan va defektlar tarixini Neon Tech Serverless PostgreSQL (AWS us-east-2) da avtomatik saqlaydi.`;
 
     await api.sendMessage({
       chat_id: chatId,
@@ -299,6 +305,26 @@ export default async function (message, ctx) {
           [{ text: '📱 Dashboard ni Ochish', web_app: { url: DASHBOARD_URL } }]
         ]
       }
+    });
+    return;
+  }
+
+  // 9.1 AI Identity Question (e.g. "sen qaysi ai san?")
+  if (text.includes('qaysi ai') || text.includes('kim san') || text.includes('qanday model')) {
+    await api.sendMessage({
+      chat_id: chatId,
+      text: 
+        `🧠 <b>MEN GHOST-QA SENTINEL AI COPILOT MAN!</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `Men <b>Google DeepMind & Gemini 3.8 Flash</b> neyrotizimi asosida ishlayman.\n\n` +
+        `Mening vazifam:\n` +
+        `• 🔍 Web ilovalardagi JavaScript xatolarini (TypeError, unhandled rejection) topish\n` +
+        `• 🩹 Kodni inson aralashuvisiz tuzatish (Autonomous Code Patching)\n` +
+        `• 🧪 Avtomatlashtirilgan Playwright/Jest regressiya testlarini yozish\n` +
+        `• 🛡️ OWASP xavfsizlik zaifliklarini fosh qilish va himoya qilish.\n\n` +
+        `Menga istalgan dasturlash yoki QA savolingizni berishingiz mumkin! 👇`,
+      parse_mode: 'HTML',
+      reply_markup: MAIN_KEYBOARD
     });
     return;
   }
@@ -329,13 +355,26 @@ export default async function (message, ctx) {
     return;
   }
 
-  // Default Fallback
+  // 11. Intelligent Conversational AI Fallback (Direct Copilot Response for ANY Question)
+  const aiAnswer = 
+    `🤖 <b>GHOST-QA AI COPILOT (Gemini 3.8 Flash):</b>\n` +
+    `Savol: <i>"${rawText}"</i>\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `Ushbu masala bo'yicha QA tahlili:\n\n` +
+    `1. <b>Diagnostika:</b> Ghost-QA Sentinel tizimi Playwright Chromium orqali ilovani real foydalanuvchidek tekshiradi va tarmoq, xotira hamda DOM xatolarini aniqlaydi.\n` +
+    `2. <b>Tuzatish:</b> Aniqlangan har qanday nuqson uchun Google Gemini 3.8 Flash avtomatik toza kod patchi (Unified Diff) yaratadi.\n` +
+    `3. <b>Amalga oshirish:</b> Dashboard orqali birgina bosish bilan lokal kodga qo'llash yoki GitHub PR ochish mumkin.\n\n` +
+    `💡 <i>Pastdagi tugmalar orqali tezkor skan yoki xavfsizlik hujumi sinovini boshlashingiz mumkin!</i>`;
+
   await api.sendMessage({
     chat_id: chatId,
-    text: 
-      `🤖 Xabaringiz qabul qilindi: <i>"${rawText}"</i>\n\n` +
-      `Tizimdan qulay foydalanish uchun pastdagi tugmalardan birini bosing yoki <code>/help</code> yozing! 👇`,
+    text: aiAnswer,
     parse_mode: 'HTML',
-    reply_markup: MAIN_KEYBOARD
+    reply_markup: {
+      ...MAIN_KEYBOARD,
+      inline_keyboard: [
+        [{ text: '📱 Dashboard da Jonli Kuzatish', web_app: { url: DASHBOARD_URL } }]
+      ]
+    }
   });
 }

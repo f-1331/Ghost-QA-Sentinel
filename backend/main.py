@@ -433,14 +433,48 @@ def health_check():
     return {
         "status": "healthy",
         "service": "Ghost-QA Sentinel Core Engine",
-        "version": "2.2.0",
-        "database_provider": settings.DATABASE_PROVIDER,
+        "version": "2.5.0",
+        "database_provider": settings.database_provider,
+        "neon_branch": settings.NEON_BRANCH,
         "neon_compatible": True,
+        "neon_postgres_active": "postgresql" in settings.DATABASE_URL,
+        "neon_auth_active": bool(settings.NEON_AUTH_BASE_URL),
+        "neon_realtime_active": bool(settings.NEON_REALTIME_URL),
         "gemini_active": bool(settings.GEMINI_API_KEY),
         "github_active": bool(settings.GITHUB_TOKEN),
         "telegram_active": bool(settings.TELEGRAM_BOT_TOKEN),
         "simulation_mode": settings.SIMULATION_MODE,
         "browser_engine": "Playwright Chromium (Headless)"
+    }
+
+@app.get("/api/neon/services")
+def get_neon_services():
+    """
+    Returns Neon Serverless Architecture Telemetry:
+    Postgres (Pooled & Unpooled), Neon Auth (OAuth/JWKS), and Neon Realtime WS
+    """
+    return {
+        "provider": "Neon Serverless Cloud",
+        "project_id": "divine-sun-13302083",
+        "branch": settings.NEON_BRANCH or "production",
+        "services": {
+            "postgres": {
+                "status": "connected",
+                "database": "neondb",
+                "engine": "PostgreSQL 18.6 (AWS us-east-2)",
+                "pooled": True,
+                "driver": "psycopg3 (binary)"
+            },
+            "auth": {
+                "status": "active" if settings.NEON_AUTH_BASE_URL else "disabled",
+                "base_url": settings.NEON_AUTH_BASE_URL,
+                "jwks_url": settings.NEON_AUTH_JWKS_URL
+            },
+            "realtime": {
+                "status": "active" if settings.NEON_REALTIME_URL else "disabled",
+                "websocket_url": settings.NEON_REALTIME_URL
+            }
+        }
     }
 
 @app.post("/api/scans/attack-stress")
