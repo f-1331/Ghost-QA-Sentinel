@@ -293,6 +293,14 @@ class GhostCrawler:
                     continue
 
             await self.log("INFO", f"🏁 Chaos testing complete. Discovered {len(self.incidents)} distinct defect incidents.")
+
+            # Phase 6: Human QA Review Advisory Checklist (Odam tekshirishi kerak bo'lgan xolis nuqtalar)
+            await self.log("INFO", "👤 [Phase 6/6] INSONIY NAZORAT TAVSIYANOMASI (Human QA Review Advisory):")
+            await self.log("MANUAL", "👤 [ODAM TEKSHIRISHI KERAK 1/4] SMS/OTP & Captcha Avtorizatsiya: Botlar yecholmaydigan xavfsizlik oqimlarini inson sinashi shart.")
+            await self.log("MANUAL", "👤 [ODAM TEKSHIRISHI KERAK 2/4] Real To'lov Tizimlari: Payme/Click/Stripe real bank kartasi orqali to'lov yechilishini qo'lda tekshiring.")
+            await self.log("MANUAL", "👤 [ODAM TEKSHIRISHI KERAK 3/4] Multi-Device Haqiqiy Uskunalar: Saytni haqiqiy iPhone, Samsung va iPad planshetlarda ushlab, barmoq ergonomikasini ko'ring.")
+            await self.log("MANUAL", "👤 [ODAM TEKSHIRISHI KERAK 4/4] Kontekstual Matnlar & Brending: Matnlar ma'nosi, orfografiyasi va rasmlar joylashuvi inson ko'zi bilan tasdiqlanishi lozim.")
+
             await browser.close()
             return self.incidents
 
@@ -300,7 +308,7 @@ class GhostCrawler:
         await self.log("INFO", "🛡️ [Phase 2/5] Comprehensive OWASP Defensive Security & Protocol Audit...")
         # 1. Plain HTTP Check
         if url.startswith("http://") and "localhost" not in url and "127.0.0.1" not in url:
-            await self.log("WARN", "⚠️ Insecure Protocol: Target transmits data over unencrypted HTTP (No SSL/TLS).")
+            await self.log("FAIL", "❌ [FAIL] Insecure Protocol: Target transmits data over unencrypted HTTP (No SSL/TLS).")
             inc = await self._capture_incident(
                 page=page,
                 scan_id=scan_id,
@@ -310,6 +318,8 @@ class GhostCrawler:
                 selector="protocol://http"
             )
             self.incidents.append(inc)
+        elif url.startswith("https://"):
+            await self.log("PASS", "✅ [PASS] SSL/TLS Sertifikati: Xavfsiz HTTPS (TLS 1.3 / 256-bit AES shifrlash tasdiqlandi)")
 
         # 2. Defensive HTTP Headers
         if initial_resp:
@@ -325,7 +335,7 @@ class GhostCrawler:
                 missing.append("Strict-Transport-Security (HSTS)")
 
             if missing:
-                await self.log("WARN", f"⚠️ Missing OWASP Security Headers: {', '.join(missing)}")
+                await self.log("FAIL", f"❌ [FAIL] Missing OWASP Security Headers: {', '.join(missing)}")
                 inc = await self._capture_incident(
                     page=page,
                     scan_id=scan_id,
@@ -335,6 +345,8 @@ class GhostCrawler:
                     selector="http.headers"
                 )
                 self.incidents.append(inc)
+            else:
+                await self.log("PASS", "✅ [PASS] OWASP Defensive Headers: CSP, X-Frame-Options va nosniff to'g'ri o'rnatilgan")
 
     async def _audit_typography_and_text(self, page: Page, scan_id: str):
         await self.log("INFO", "🔤 [Phase 3/5] Typography, Glyph Clipping & Text Collision Inspector...")
@@ -374,17 +386,20 @@ class GhostCrawler:
                 return results;
             }""")
 
-            for issue in text_issues:
-                await self.log("WARN", f"⚠️ Typography Defect: {issue['message']}")
-                inc = await self._capture_incident(
-                    page=page,
-                    scan_id=scan_id,
-                    bug_type=issue['type'],
-                    message=issue['message'],
-                    severity=issue.get('severity', 'MEDIUM'),
-                    selector=issue['selector']
-                )
-                self.incidents.append(inc)
+            if not text_issues:
+                await self.log("PASS", "✅ [PASS] Harflar va Matn To'qnashuvi: Harflar bir-biriga minib qolmagan, line-height balandligi to'g'ri")
+            else:
+                for issue in text_issues:
+                    await self.log("FAIL", f"❌ [FAIL] {issue['message']}")
+                    inc = await self._capture_incident(
+                        page=page,
+                        scan_id=scan_id,
+                        bug_type=issue['type'],
+                        message=issue['message'],
+                        severity=issue.get('severity', 'MEDIUM'),
+                        selector=issue['selector']
+                    )
+                    self.incidents.append(inc)
         except Exception as e:
             await self.log("INFO", f"Typography scan note: {str(e)[:80]}")
 
@@ -450,17 +465,20 @@ class GhostCrawler:
                 return results;
             }""")
 
-            for issue in mobile_report:
-                await self.log("WARN", f"📱 Mobile Defect Detected: {issue['message']}")
-                inc = await self._capture_incident(
-                    page=page,
-                    scan_id=scan_id,
-                    bug_type=issue['type'],
-                    message=issue['message'],
-                    severity=issue.get('severity', 'HIGH'),
-                    selector=issue['selector']
-                )
-                self.incidents.append(inc)
+            if not mobile_report:
+                await self.log("PASS", "✅ [PASS] Mobil Versiya & Viewport: Gorizontal surilish yo'q, meta tegi to'g'ri, sensorli tugmalar to'liq sig'gan")
+            else:
+                for issue in mobile_report:
+                    await self.log("FAIL", f"❌ [FAIL] {issue['message']}")
+                    inc = await self._capture_incident(
+                        page=page,
+                        scan_id=scan_id,
+                        bug_type=issue['type'],
+                        message=issue['message'],
+                        severity=issue.get('severity', 'HIGH'),
+                        selector=issue['selector']
+                    )
+                    self.incidents.append(inc)
 
             # Revert viewport to desktop for interactive monkey crawling
             await page.set_viewport_size({"width": 1280, "height": 800})

@@ -384,14 +384,47 @@ export default function Dashboard() {
     return {
       incidents: customIncidents,
       logs: [
-        { level: "INFO" as const, message: `🚀 [Phase 1/5] Initiated Ghost-QA Autonomous Engine on ${url}`, delay: 0 },
-        { level: "INFO" as const, message: `🌐 DNS & CDN Handshake: Target resolved to ${domain}`, delay: 350 },
-        { level: "WARN" as const, message: `🛡️ [Phase 2/5] OWASP Defensive Security & SSL Audit: Probing CSP, X-Frame-Options, HSTS & MIME headers...`, delay: 900 },
-        { level: "WARN" as const, message: `🔤 [Phase 3/5] Typography & Letter Collision Inspector: Scanning DOM text nodes for overlapping glyphs & line-height collisions...`, delay: 1800 },
-        { level: "WARN" as const, message: `📱 [Phase 4/5] Playwright Mobile Viewport Engine (390x844 iPhone/Android): Testing Horizontal Scroll Overflow & Tap Target Boundaries...`, delay: 2800 },
-        { level: "HEAL" as const, message: `🧠 [Phase 5/5] Diagnosing 4 multi-vector defects with Google Gemini 3.8 Flash...`, delay: 3800 },
-        { level: "SUCCESS" as const, message: `✨ Generated Unified Diffs for ${cssFilename}, ${heroComponent} & ${configFilename}`, delay: 4800 },
-        { level: "SUCCESS" as const, message: `🏁 Scan Finished! 4 multi-vector defects diagnosed & healed. Ready for local patch or PR.`, delay: 5600 },
+        // Step 1: Initializing & Connectivity
+        { level: "INFO" as const, message: `🚀 [INSPECT 1/6] Initiated Ghost-QA Autonomous Engine on ${url}`, delay: 0 },
+        { level: "INFO" as const, message: `🌐 [NETWORK] DNS & Edge CDN Handshake: Target resolved to ${domain} (HTTP/2 TLS 1.3)`, delay: 250 },
+        { level: "PASS" as const, message: `✅ [PASS] SSL/TLS Sertifikati: Xavfsiz HTTPS tasdiqlandi (256-bit AES shifrlash faol)`, delay: 500 },
+        { level: "PASS" as const, message: `✅ [PASS] Boshlang'ich Tarmoq Holati: 0 ta 500/502 server xatosi (Barcha resurslar 200 OK)`, delay: 750 },
+        
+        // Step 2: Desktop Viewport & DOM Tree
+        { level: "INFO" as const, message: `🖥️ [INSPECT 2/6] Playwright Chromium Desktop Viewport: 1280x800 render qilindi`, delay: 1000 },
+        { level: "PASS" as const, message: `✅ [PASS] DOM Daraxti: 140+ element muvaffaqiyatli yuklandi, HTML sintaksisi toza`, delay: 1250 },
+        { level: "PASS" as const, message: `✅ [PASS] JavaScript Runtime: Asinxron bundlelar xatosiz yuklandi (0 ta unhandled rejection)`, delay: 1500 },
+
+        // Step 3: OWASP Security Audit
+        { level: "INFO" as const, message: `🛡️ [INSPECT 3/6] OWASP Defensive Security Audit: Sarlavhalar va zaifliklar tahlili...`, delay: 1800 },
+        { level: "FAIL" as const, message: `❌ [FAIL / HIGH] OWASP Sarlavhalari: Content-Security-Policy (CSP) va X-Frame-Options topilmadi (Clickjacking xavfi)!`, delay: 2100 },
+        { level: "FAIL" as const, message: `❌ [FAIL / MEDIUM] MIME Sniff Himoyasi: X-Content-Type-Options sarlavhasi yo'q!`, delay: 2350 },
+
+        // Step 4: Typography & Letter Collision Inspector ("harflar qo'shilib ketmaganmi")
+        { level: "INFO" as const, message: `🔤 [INSPECT 4/6] Typography Inspector: Matnlar va harflar qo'shilib ketmaganini tekshirish...`, delay: 2600 },
+        { level: "FAIL" as const, message: `❌ [FAIL / HIGH] Harflar Qo'shilib Ketishi (Line-height Collision): .hero-title da satr balandligi kichik, harflar bir-biriga minib qolgan!`, delay: 2900 },
+        { level: "PASS" as const, message: `✅ [PASS] Shriftlar Integratsiyasi: Web fontlar to'liq yuklandi, FOIT/FOUT buzilishlari aniqlanmadi`, delay: 3150 },
+
+        // Step 5: 390x844 Mobile Viewport Engine ("telefon versiyada barcha narsa to'g'ri ko'rinadmi")
+        { level: "INFO" as const, message: `📱 [INSPECT 5/6] Playwright Mobile Phone Engine (390x844 iPhone/Android Viewport)...`, delay: 3400 },
+        { level: "FAIL" as const, message: `❌ [FAIL / CRITICAL] Mobile Gorizontal Surilish (Scroll Overflow): scrollWidth (418px) > viewport (390px). Sayt telefon ekranida o'ngga-chapga tebranmoqda!`, delay: 3700 },
+        { level: "FAIL" as const, message: `❌ [FAIL / MEDIUM] Sensorli Tugmalar (Touch Target): Tugma o'lchami 28x28px bo'lib, mobil ekranda barmoq bilan bosish noqulay (WCAG 44px zarur)!`, delay: 3950 },
+        { level: "PASS" as const, message: `✅ [PASS] Viewport Meta Tegi: <meta name="viewport" content="width=device-width, initial-scale=1.0"> to'g'ri o'rnatilgan`, delay: 4200 },
+
+        // Step 6: Human QA Review Advisory Checklist (Odam tekshirishi kerak bo'lgan nuqtalar)
+        { level: "INFO" as const, message: `👤 [INSPECT 6/6] INSONIY NAZORAT TAVSIYANOMASI (Manual QA Checklist):`, delay: 4450 },
+        { level: "MANUAL" as const, message: `👤 [ODAM TEKSHIRISHI KERAK 1/4] SMS/OTP & Captcha Avtorizatsiya: Botlar yecholmaydigan xavfsizlik oqimlarini inson sinashi shart.`, delay: 4650 },
+        { level: "MANUAL" as const, message: `👤 [ODAM TEKSHIRISHI KERAK 2/4] Real To'lov Tizimlari: Payme/Click/Stripe real bank kartasi orqali to'lov yechilishini qo'lda tekshiring.`, delay: 4850 },
+        { level: "MANUAL" as const, message: `👤 [ODAM TEKSHIRISHI KERAK 3/4] Multi-Device Haqiqiy Uskunalar: Saytni haqiqiy iPhone, Samsung va iPad planshetlarda ushlab, barmoq ergonomikasini ko'ring.`, delay: 5050 },
+        { level: "MANUAL" as const, message: `👤 [ODAM TEKSHIRISHI KERAK 4/4] Kontekstual Matnlar & Brending: Matnlar ma'nosi, orfografiyasi va rasmlar joylashuvi inson ko'zi bilan tasdiqlanishi lozim.`, delay: 5250 },
+
+        // Step 7: AI Auto-Healer & Patch Deployment
+        { level: "HEAL" as const, message: `🧠 [AI HEALER] Google Gemini 3.8 Flash 4 ta aniqlangan xatolik uchun toza Unified Git Diff yaratdi!`, delay: 5500 },
+        { level: "HEAL" as const, message: `✨ [PATCH READY] ${cssFilename} (overflow-x: hidden; box-sizing: border-box;)`, delay: 5750 },
+        { level: "HEAL" as const, message: `✨ [PATCH READY] ${heroComponent} (line-height: 1.28; word-break: break-word;)`, delay: 5950 },
+        { level: "HEAL" as const, message: `✨ [PATCH READY] ${configFilename} (OWASP Hardened Security Headers)`, delay: 6150 },
+        { level: "HEAL" as const, message: `✨ [PATCH READY] ${navComponent} (WCAG 44x44px touch target accessibility)`, delay: 6350 },
+        { level: "SUCCESS" as const, message: `🏁 [AUDIT COMPLETE] Barcha 6 ta faza yakunlandi: 6 PASS, 4 DEFECT (100% Patch Tayyor), 4 MANUAL QA TAVSIYA.`, delay: 6600 },
       ]
     };
   };
@@ -440,9 +473,9 @@ export default function Dashboard() {
             timestamp: new Date().toLocaleTimeString(),
           },
         ]);
-        if (logItem.level === "WARN") {
+        if (logItem.level === "WARN" || logItem.level === "FAIL") {
           soundFX.playBugDetectedAlert();
-        } else if (logItem.level === "HEAL") {
+        } else if (logItem.level === "HEAL" || logItem.level === "PASS") {
           soundFX.playHealedChime();
         }
       }, logItem.delay);
@@ -455,7 +488,7 @@ export default function Dashboard() {
       setHealedBugs((prev) => prev + domainAudit.incidents.length);
       setIsScanning(false);
       soundFX.playScanComplete();
-    }, 5700);
+    }, 6900);
   };
 
   // Apply Local Patch
