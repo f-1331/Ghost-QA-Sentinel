@@ -1,0 +1,44 @@
+# render.yaml - Infrastructure as Code Blueprint for Render.com
+services:
+  # 1. Backend Core Engine: FastAPI + Playwright Headless Chromium + WebSockets
+  - type: web
+    name: ghost-qa-sentinel-api
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONPATH
+        value: .
+      - key: DATABASE_PROVIDER
+        value: Neon Tech PostgreSQL (Serverless)
+      - key: SIMULATION_MODE
+        value: true
+      - key: GITHUB_REPO
+        value: f-1331/Ghost-QA-Sentinel
+      - key: FRONTEND_URL
+        sync: false
+
+  # 2. Frontend Dashboard: Next.js 14 App Router
+  - type: web
+    name: ghost-qa-sentinel-dashboard
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18.20.0
+      - key: NEXT_PUBLIC_BACKEND_URL
+        fromService:
+          name: ghost-qa-sentinel-api
+          type: web
+          property: host

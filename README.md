@@ -17,6 +17,26 @@
 
 ---
 
+## ☁️ 1-Click Cloud Deployment (Render & Vercel)
+
+### 1. Backend Core (FastAPI + Playwright Chromium + WebSockets)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/f-1331/Ghost-QA-Sentinel)
+
+Ghost-QA Sentinel includes a production-ready `render.yaml` blueprint and multi-stage `Dockerfile` with Playwright Chromium pre-installed.
+- **Platform:** [Render.com](https://dashboard.render.com)
+- **Blueprint:** `render.yaml` (auto-configured Docker container)
+- **Health Check:** `/api/health`
+
+### 2. Frontend Command Center (Next.js 14)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ff-1331%2FGhost-QA-Sentinel&root-directory=frontend)
+
+- **Platform:** [Vercel](https://vercel.com)
+- **Root Directory:** `frontend`
+- **Framework:** `Next.js`
+- **Env Variable:** `NEXT_PUBLIC_BACKEND_URL` (set to your Render backend URL)
+
+---
+
 ## 🏗️ Architecture & Monorepo Structure
 
 ```
