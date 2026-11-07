@@ -16,7 +16,7 @@ export const MAIN_KEYBOARD = {
     [{ text: '🛡️ Xavfsizlik Auditi (8 Vector)' }, { text: '⚡ Rust AST Tezligi' }],
     [{ text: '☁️ Neon Serverless DB' }, { text: '📊 Jonli Statistika' }],
     [{ text: '🎨 7 Xil Dizayn & Mavzular' }, { text: '📖 Investor Qo\'llanmasi' }],
-    [{ text: '⚙️ Sentinel Sozlamalari' }, { text: '🐙 GitHub PR & Diff' }],
+    [{ text: '🌐 Til / Language (UZ/EN/RU)' }, { text: '⚙️ Sentinel Sozlamalari' }],
     [{ text: '📱 WebApp Dashboard (Jonli)', web_app: { url: DASHBOARD_URL } }]
   ],
   resize_keyboard: true,
@@ -82,6 +82,42 @@ export default async function (message, ctx) {
           [
             { text: '📊 Jonli Statistika', callback_data: 'action:stats' },
             { text: '🐙 GitHub Repozitoriy', url: GITHUB_REPO_URL }
+          ]
+        ]
+      }
+    });
+    return;
+  }
+
+  // 1.5. LANGUAGE SELECTION HANDLER (/lang or Til button)
+  if (
+    text.startsWith('/lang') || 
+    text.includes('til') || 
+    text.includes('language') || 
+    text.includes('язык') || 
+    text === '🌐 til / language (uz/en/ru)'
+  ) {
+    await api.sendMessage({
+      chat_id: chatId,
+      text: 
+        `🌐 <b>TILNI TANLANG / CHOOSE LANGUAGE / ВЫБЕРИТЕ ЯЗЫК:</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `Ghost-QA Sentinel uchala tilda to'liq qo'llab-quvvatlanadi:\n\n` +
+        `🇺🇿 <b>O'zbekcha:</b> To'liq o'zbek tilidagi interfeys, tushunarli investor qo'llanmasi va AI tahlillari.\n` +
+        `🇬🇧 <b>English:</b> Full English localization, Whitepaper, CI/CD specs, and Gemini prompts.\n` +
+        `🇷🇺 <b>Русский:</b> Полная русская локализация, документация для инвесторов и анализ качества.\n\n` +
+        `👇 <i>Quyidagi tugmalardan birini bosing:</i>`,
+      parse_mode: 'HTML',
+      reply_markup: {
+        ...MAIN_KEYBOARD,
+        inline_keyboard: [
+          [
+            { text: "🇺🇿 O'zbekcha", callback_data: 'lang:uz' },
+            { text: "🇬🇧 English", callback_data: 'lang:en' },
+            { text: "🇷🇺 Русский", callback_data: 'lang:ru' }
+          ],
+          [
+            { text: '📱 WebApp Dashboard', web_app: { url: DASHBOARD_URL } }
           ]
         ]
       }

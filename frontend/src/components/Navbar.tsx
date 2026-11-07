@@ -41,6 +41,7 @@ interface NavbarProps {
   onOpenCiCdModal: () => void;
   onOpenAttackbenchModal: () => void;
   onOpenCopilotModal?: () => void;
+  onOpenWelcomeLangModal?: () => void;
   onExportReport: () => void;
   currentTheme: ThemeId;
 }
@@ -55,6 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCiCdModal,
   onOpenAttackbenchModal,
   onOpenCopilotModal,
+  onOpenWelcomeLangModal,
   onExportReport,
   currentTheme
 }) => {
@@ -217,38 +219,38 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{t.exportBtn}</span>
           </button>
 
-          {/* Multi-language Selector Pill */}
-          <div className="relative shrink-0">
-            <button
-              onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sentinel-card hover:bg-sentinel-border border border-sentinel-border text-gray-200 hover:text-white transition-all font-sans"
-              title="Select Language"
-            >
-              <Globe className="w-3.5 h-3.5 text-sentinel-cyan" />
-              <span className="uppercase font-bold">{lang}</span>
-            </button>
+          {/* Multi-language Selector: Direct 3-Lang Quick Switcher + Welcome Modal Trigger */}
+          <div className="flex items-center bg-sentinel-card border border-sentinel-border rounded-xl p-0.5 shrink-0 shadow-sm">
+            {languages.map((item) => (
+              <button
+                key={item.code}
+                onClick={() => {
+                  soundFX.playClick();
+                  onLanguageChange(item.code);
+                }}
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                  lang === item.code
+                    ? "bg-sentinel-cyan text-black shadow-md shadow-sentinel-cyan/30"
+                    : "text-gray-400 hover:text-gray-100 hover:bg-sentinel-surface/80"
+                }`}
+                title={`Switch language to ${item.label}`}
+              >
+                <span>{item.flag}</span>
+                <span className="uppercase text-[11px]">{item.code}</span>
+              </button>
+            ))}
 
-            {isLangDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-36 bg-sentinel-card border border-sentinel-border rounded-xl shadow-xl z-50 p-1 font-sans">
-                {languages.map((item) => (
-                  <button
-                    key={item.code}
-                    onClick={() => {
-                      soundFX.playClick();
-                      onLanguageChange(item.code);
-                      setIsLangDropdownOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg text-left transition-all ${
-                      lang === item.code
-                        ? "bg-sentinel-cyan/15 text-sentinel-cyan font-bold"
-                        : "text-gray-300 hover:bg-sentinel-surface hover:text-white"
-                    }`}
-                  >
-                    <span>{item.flag}</span>
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+            {onOpenWelcomeLangModal && (
+              <button
+                onClick={() => {
+                  soundFX.playClick();
+                  onOpenWelcomeLangModal();
+                }}
+                className="p-1 px-1.5 text-sentinel-cyan hover:text-white hover:bg-sentinel-surface rounded-lg transition-colors ml-0.5"
+                title="Open Interactive Language Center"
+              >
+                <Globe className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
 

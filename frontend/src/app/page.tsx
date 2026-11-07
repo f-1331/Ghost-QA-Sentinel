@@ -39,6 +39,7 @@ import { SentinelCopilot } from "../components/SentinelCopilot";
 import { TimeTravelDebugger } from "../components/TimeTravelDebugger";
 import { CiCdIntegrationModal } from "../components/CiCdIntegrationModal";
 import { ChaosAttackbenchModal } from "../components/ChaosAttackbenchModal";
+import { WelcomeLanguageModal } from "../components/WelcomeLanguageModal";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const WS_URL = BACKEND_URL.replace(/^http/, "ws");
@@ -122,6 +123,7 @@ export default function Dashboard() {
   const [isCiCdModalOpen, setIsCiCdModalOpen] = useState(false);
   const [isAttackbenchModalOpen, setIsAttackbenchModalOpen] = useState(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [isWelcomeLangOpen, setIsWelcomeLangOpen] = useState(false);
 
   const [targetUrl, setTargetUrl] = useState(`${BACKEND_URL}/sandbox`);
   const [githubRepo, setGithubRepo] = useState("f-1331/Ghost-QA-Sentinel");
@@ -164,10 +166,15 @@ export default function Dashboard() {
         setCurrentBgEffect(savedBgEffect);
       }
 
-      const visited = localStorage.getItem("ghostqa_visited_v2");
-      if (!visited) {
-        setIsGuideModalOpen(true);
-        localStorage.setItem("ghostqa_visited_v2", "true");
+      const langSelected = localStorage.getItem("ghostqa_lang_selected");
+      if (!langSelected) {
+        setIsWelcomeLangOpen(true);
+      } else {
+        const visited = localStorage.getItem("ghostqa_visited_v2");
+        if (!visited) {
+          setIsGuideModalOpen(true);
+          localStorage.setItem("ghostqa_visited_v2", "true");
+        }
       }
     } catch (e) {
       // Ignore storage errors
@@ -178,6 +185,7 @@ export default function Dashboard() {
     setLang(newLang);
     try {
       localStorage.setItem("ghostqa_lang", newLang);
+      localStorage.setItem("ghostqa_lang_selected", "true");
     } catch (e) {}
   };
 
@@ -465,6 +473,7 @@ export default function Dashboard() {
         onOpenCiCdModal={() => setIsCiCdModalOpen(true)}
         onOpenAttackbenchModal={() => setIsAttackbenchModalOpen(true)}
         onOpenCopilotModal={() => setIsCopilotOpen(true)}
+        onOpenWelcomeLangModal={() => setIsWelcomeLangOpen(true)}
         onExportReport={handleExportReport}
         currentTheme={currentTheme}
       />
@@ -520,7 +529,7 @@ export default function Dashboard() {
         <div className="bg-sentinel-surface border border-sentinel-border rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar shadow-md">
           <div className="flex items-center gap-2 shrink-0 text-xs font-mono text-gray-400">
             <Palette className="w-3.5 h-3.5 text-sentinel-cyan" />
-            <span className="hidden sm:inline">Sayt Dizayni:</span>
+            <span className="hidden sm:inline">{t.siteThemeTitle}</span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto no-scrollbar">
@@ -551,7 +560,7 @@ export default function Dashboard() {
             onClick={() => setIsThemeModalOpen(true)}
             className="text-[11px] font-mono text-sentinel-cyan hover:underline shrink-0"
           >
-            Mavzular & Fon →
+            {t.moreThemesBtn}
           </button>
         </div>
 
@@ -851,6 +860,14 @@ export default function Dashboard() {
         onClose={() => setIsAttackbenchModalOpen(false)}
         lang={lang}
         backendUrl={BACKEND_URL}
+      />
+
+      {/* First-visit & Interactive Welcome Language Selector Modal */}
+      <WelcomeLanguageModal
+        isOpen={isWelcomeLangOpen}
+        onClose={() => setIsWelcomeLangOpen(false)}
+        currentLang={lang}
+        onSelectLanguage={handleLanguageChange}
       />
 
     </div>

@@ -30,6 +30,7 @@ export const CiCdIntegrationModal: React.FC<CiCdIntegrationModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"github" | "gitlab" | "docker" | "webhook">("github");
   const [copied, setCopied] = useState(false);
+  const t = translations[lang] || translations.uz;
 
   if (!isOpen) return null;
 
@@ -121,7 +122,7 @@ services:
                 CI/CD PIPELINE CENTER
               </span>
               <h2 className="text-lg font-bold text-white tracking-tight">
-                {lang === "uz" ? "CI/CD & Avtomatlashtirish Integratsiyasi" : lang === "ru" ? "Интеграция с CI/CD" : "CI/CD & Webhook Automation"}
+                {t.cicdModalTitle}
               </h2>
             </div>
           </div>
@@ -183,12 +184,12 @@ services:
               {copied ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400 font-bold">Nusxalandi!</span>
+                  <span className="text-emerald-400 font-bold">{t.copiedSuccess}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5 text-sentinel-cyan" />
-                  <span>Kodni Nusxalash</span>
+                  <span>{t.copyBtn}</span>
                 </>
               )}
             </button>
@@ -199,10 +200,9 @@ services:
           </pre>
 
           <div className="bg-sentinel-card border border-sentinel-border rounded-xl p-3.5 text-gray-300 font-sans text-xs space-y-1">
-            <span className="text-sentinel-cyan font-bold font-mono text-[11px]">💡 ZERO-CONFIG QO'LLASH:</span>
+            <span className="text-sentinel-cyan font-bold font-mono text-[11px]">{t.cicdZeroConfigTitle}</span>
             <p>
-              Ushbu faylni o'z loyihangizning <code>.github/workflows/</code> papkasiga joylang. 
-              Har bir yangi Pull Request ochilganda Ghost-QA Sentinel ilovangizni avtomatik chaos-test qiladi va xatoliklar bo'lsa darhol bloklaydi!
+              {t.cicdZeroConfigDesc}
             </p>
           </div>
         </div>
@@ -213,7 +213,7 @@ services:
             onClick={onClose}
             className="px-5 py-2 rounded-xl bg-sentinel-cyan text-black hover:bg-cyan-300 font-bold text-xs font-mono transition-all shadow-md shadow-sentinel-cyan/20"
           >
-            Yopish
+            {t.closeBtn}
           </button>
         </div>
 

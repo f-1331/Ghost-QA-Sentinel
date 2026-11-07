@@ -83,19 +83,35 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({
   const quickPrompts = [
     {
       label: lang === "uz" ? "🧪 Playwright Test" : lang === "ru" ? "🧪 Playwright Тест" : "🧪 Playwright Test",
-      prompt: "Qanday qilib bu xatolikka qarshi Playwright regressiya testi yozish mumkin?"
+      prompt: lang === "uz" 
+        ? "Qanday qilib bu xatolikka qarshi Playwright regressiya testi yozish mumkin?"
+        : lang === "ru"
+        ? "Как написать регрессионный тест Playwright против этой ошибки?"
+        : "How to synthesize an automated Playwright regression spec for this error?"
     },
     {
       label: lang === "uz" ? "🔍 TypeError Tahlili" : lang === "ru" ? "🔍 Анализ TypeError" : "🔍 Deep TypeError Analysis",
-      prompt: "TypeError: Cannot read properties of undefined (reading 'pricing') xatosi nega chiqadi va uni qanday oldini olish kerak?"
+      prompt: lang === "uz"
+        ? "TypeError: Cannot read properties of undefined (reading 'pricing') xatosi nega chiqadi va uni qanday oldini olish kerak?"
+        : lang === "ru"
+        ? "Почему возникает ошибка TypeError: Cannot read properties of undefined (reading 'pricing') и как ее предотвратить?"
+        : "Why does TypeError: Cannot read properties of undefined (reading 'pricing') occur and how to prevent it?"
     },
     {
       label: lang === "uz" ? "🛡️ Xavfsizlik Auditi" : lang === "ru" ? "🛡️ Безопасность" : "🛡️ OWASP Audit",
-      prompt: "Ghost-QA crawler qanday xavfsizlik va SSRF himoyalariga ega?"
+      prompt: lang === "uz"
+        ? "Ghost-QA crawler qanday xavfsizlik va SSRF himoyalariga ega?"
+        : lang === "ru"
+        ? "Какую защиту безопасности и SSRF обеспечивает сканер Ghost-QA?"
+        : "What security and SSRF safeguards does the Ghost-QA crawler employ?"
     },
     {
       label: lang === "uz" ? "⚡ Rust Tezligi" : lang === "ru" ? "⚡ Скорость Rust" : "⚡ Rust Speed",
-      prompt: "Rust dasturlash tili ushbu arxitekturada qanday ustunliklar bera oladi?"
+      prompt: lang === "uz"
+        ? "Rust dasturlash tili ushbu arxitekturada qanday ustunliklar bera oladi?"
+        : lang === "ru"
+        ? "Какие преимущества дает язык программирования Rust в этой архитектуре?"
+        : "What performance advantages does Rust provide in this architecture?"
     }
   ];
 
@@ -150,10 +166,13 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({
       let fallbackAnswer = "";
       const lower = text.toLowerCase().trim();
 
-      if (lower.includes("salom") || lower.includes("assalom") || lower.includes("hello") || lower.includes("hi") || lower.length <= 4) {
+      if (lower.includes("salom") || lower.includes("assalom") || lower.includes("hello") || lower.includes("hi") || lower.includes("привет") || lower.length <= 4) {
         fallbackAnswer = 
-          "👋 **Va alaykum assalom! Xush kelibsiz!**\n\n" +
-          "Qalaysiz, ishlaringiz yaxshimi? Men Ghost-QA Sentinel AI Copilotiman. Web ilovangizdagi har qanday xatolik, TypeError, layout buzilishlarini tekshirish yoki Playwright testlarini generatsiya qilishda sizga yordam berishga tayyorman. Menga qanday savolingiz bor?";
+          lang === "uz"
+            ? "👋 **Va alaykum assalom! Xush kelibsiz!**\n\nQalaysiz, ishlaringiz yaxshimi? Men Ghost-QA Sentinel AI Copilotiman. Web ilovangizdagi har qanday xatolik, TypeError, layout buzilishlarini tekshirish yoki Playwright testlarini generatsiya qilishda sizga yordam berishga tayyorman. Menga qanday savolingiz bor?"
+            : lang === "ru"
+            ? "👋 **Здравствуйте! Добро пожаловать!**\n\nЯ Ghost-QA Sentinel AI Copilot на базе Google Gemini 3.8 Flash. Помогу протестировать проект, выявить скрытые баги и сгенерировать автоматические тесты. Какой вопрос вас интересует?"
+            : "👋 **Hello and welcome!**\n\nI am Ghost-QA Sentinel AI Copilot powered by Google Gemini 3.8 Flash. I'm ready to inspect runtime bugs, synthesize Playwright regression specs, or perform security audits. How can I help you today?";
       } else if (lower.includes("rust")) {
         fallbackAnswer = 
           "⚡ **Rust Arxitekturasi Tahlili:**\n\n" +

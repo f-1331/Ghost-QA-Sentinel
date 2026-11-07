@@ -20,6 +20,52 @@ export default async function (query, ctx) {
   if (!chatId) return;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 0. LANGUAGE SWITCHER CALLBACKS
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  if (data.startsWith('lang:')) {
+    const chosenLang = data.replace('lang:', '');
+    let msg = '';
+    if (chosenLang === 'uz') {
+      msg = 
+        `🇺🇿 <b>TIL O'ZBEKCHAGA O'ZGARTIRILDI!</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `Ghost-QA Sentinel barcha hisobotlar, xatolik tahlillari va AI tavsiyalarini o'zbek tilida taqdim etadi.\n\n` +
+        `Pastdagi menyudan xohlagan tugmani bosing va tizimdan mazza qilib foydalaning!`;
+    } else if (chosenLang === 'en') {
+      msg = 
+        `🇬🇧 <b>LANGUAGE SWITCHED TO ENGLISH!</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `Ghost-QA Sentinel is now configured in English. All scan reports, root cause diagnostics, and Gemini auto-fixes will be delivered in English.\n\n` +
+        `Tap any button below to launch automated quality assurance!`;
+    } else {
+      msg = 
+        `🇷🇺 <b>ЯЗЫК ИЗМЕНЕН НА РУССКИЙ!</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `Ghost-QA Sentinel теперь работает на русском языке. Все отчеты, анализ первопричин и автопатчи Gemini будут на русском.\n\n` +
+        `Нажмите любую кнопку ниже для старта!`;
+    }
+
+    await api.sendMessage({
+      chat_id: chatId,
+      text: msg,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '🚀 Demo Skan', callback_data: 'action:scan_sandbox' },
+            { text: '⚔️ Chaos Attackbench', callback_data: 'action:attackbench' }
+          ],
+          [
+            { text: '📱 WebApp Dashboard', web_app: { url: DASHBOARD_URL } }
+          ]
+        ]
+      }
+    });
+    return;
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 1. INVESTOR PITCH DEEP-DIVE CALLBACKS
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

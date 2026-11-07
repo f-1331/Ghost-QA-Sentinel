@@ -14,6 +14,7 @@ export interface Translations {
   exportBtn: string;
   muteFx: string;
   unmuteFx: string;
+  systemRatingBadge: string;
 
   // Stats Cards
   statsTotalScans: string;
@@ -79,6 +80,26 @@ export interface Translations {
   creatingPr: string;
   prCreatedSuccess: string;
   stackTraceTitle: string;
+  exceptionDetails: string;
+  noActiveStackTrace: string;
+  autonomousFixTitle: string;
+
+  // Playwright & Test Specs
+  playwrightTestTitle: string;
+  playwrightToggleView: string;
+  playwrightToggleHide: string;
+  copiedSuccess: string;
+  copyBtn: string;
+  patchAppliedNotice: string;
+  patchRecommendationNotice: string;
+  enlargeBtn: string;
+  inspectZoomBtn: string;
+  screenshotInspectorTitle: string;
+  crashLocus: string;
+
+  // Themes & UI
+  siteThemeTitle: string;
+  moreThemesBtn: string;
 
   // Onboarding Modal
   guideModalTitle: string;
@@ -118,6 +139,36 @@ export interface Translations {
   bgEffectScanline: string;
   bgEffectMinimal: string;
   closeBtn: string;
+
+  // Welcome Language Modal
+  welcomeModalTitle: string;
+  welcomeModalSubtitle: string;
+  welcomeLanguagePrompt: string;
+  launchSentinelBtn: string;
+
+  // Chaos Attackbench Modal
+  attackbenchModalTitle: string;
+  attackbenchModalSubtitle: string;
+  attackbenchTargetLabel: string;
+  attackbenchSuiteLabel: string;
+  attackbenchAllVectors: string;
+  attackbenchPacketsSent: string;
+  attackbenchEngineLabel: string;
+  attackbenchAutoHealerLabel: string;
+  attackbenchLaunchBtn: string;
+  attackbenchAttackingBtn: string;
+  attackbenchProgressTitle: string;
+  attackbenchConsoleTitle: string;
+
+  // CI/CD Modal
+  cicdModalTitle: string;
+  cicdZeroConfigTitle: string;
+  cicdZeroConfigDesc: string;
+
+  // Time Travel Debugger
+  timeTravelTitle: string;
+  timeTravelSubtitle: string;
+  timeTravelActiveFrame: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -132,6 +183,7 @@ export const translations: Record<Language, Translations> = {
     exportBtn: "Hisobotni Yuklash",
     muteFx: "Tovushni o'chirish",
     unmuteFx: "Tovushni yoqish",
+    systemRatingBadge: "RATING: 100/100 • CHEKSIZ CHIDAMLILIK",
 
     // Stats Cards
     statsTotalScans: "Jami Chaos Skanlar",
@@ -197,6 +249,26 @@ export const translations: Record<Language, Translations> = {
     creatingPr: "PR Yaratilmoqda...",
     prCreatedSuccess: "PR Ochildi!",
     stackTraceTitle: "Konsol Xatosi va Stack Trace",
+    exceptionDetails: "Yuzaga kelgan xatolik",
+    noActiveStackTrace: "Faol stack trace qayd etilmadi.",
+    autonomousFixTitle: "Avtonom Kod Tuzatishi (Unified Diff)",
+
+    // Playwright & Test Specs
+    playwrightTestTitle: "Avtomatlashtirilgan Playwright Regressiya Testi",
+    playwrightToggleView: "Ko'rish ▼",
+    playwrightToggleHide: "Yopish ▲",
+    copiedSuccess: "Nusxalandi!",
+    copyBtn: "Kodni Nusxalash",
+    patchAppliedNotice: "✅ Ushbu xatolik uchun AI patchi muvaffaqiyatli qo'llangan.",
+    patchRecommendationNotice: "⚡ Tavsiya etilgan tuzatishni 1-bosishda qo'llang:",
+    enlargeBtn: "Kattalashtirish",
+    inspectZoomBtn: "Tekshirish & Zoom",
+    screenshotInspectorTitle: "XATOLIK SKRINSHOT INSPEKTORI",
+    crashLocus: "Crash Locus",
+
+    // Themes & UI
+    siteThemeTitle: "Sayt Dizayni:",
+    moreThemesBtn: "Mavzular & Fon →",
 
     // Onboarding Modal
     guideModalTitle: "Ghost-QA Sentinel Qanday Ishlaydi?",
@@ -235,7 +307,37 @@ export const translations: Record<Language, Translations> = {
     bgEffectParticles: "Suzuvchi Neon Nurlar",
     bgEffectScanline: "CRT Retro Monitor Scanlines",
     bgEffectMinimal: "Toza Minimalist Fon",
-    closeBtn: "Yopish"
+    closeBtn: "Yopish",
+
+    // Welcome Language Modal
+    welcomeModalTitle: "Xush kelibsiz! Tilni tanlang",
+    welcomeModalSubtitle: "Ghost-QA Sentinel — Dunyodagi 1-avtonom AI sifat nazorati va o'zini-o'zi tuzatuvchi tizim",
+    welcomeLanguagePrompt: "Sayt va barcha hisobotlardan qulay foydalanish uchun asosiy tilni tanlang:",
+    launchSentinelBtn: "🚀 Boshqaruv Markaziga Kirish",
+
+    // Chaos Attackbench Modal
+    attackbenchModalTitle: "AUTONOMOUS RED-TEAM CHAOS & ATTACKBENCH",
+    attackbenchModalSubtitle: "Saytga Keng Ko'lamli Kiberhujumlar Uyushtirish va Xatoliklarni Avtomatik Tuzatish",
+    attackbenchTargetLabel: "Hujum Nishoni (Target URL)",
+    attackbenchSuiteLabel: "Hujum Vektori Suite",
+    attackbenchAllVectors: "⚔️ Barcha 8 ta Hujum Vektori (Full Apocalypse)",
+    attackbenchPacketsSent: "Yuborilgan so'rovlar:",
+    attackbenchEngineLabel: "Hujum Dvigateli:",
+    attackbenchAutoHealerLabel: "AI Auto-Healer:",
+    attackbenchLaunchBtn: "Hujumni Boshlash va Xatolarni Tuzatish",
+    attackbenchAttackingBtn: "Hujum & Stress Sinovi Bajarilmoqda...",
+    attackbenchProgressTitle: "Hujum va Tahlil Jarayoni (Assault Progress)",
+    attackbenchConsoleTitle: "Red-Team Hujum Konsoli (Live Attack Stream)",
+
+    // CI/CD Modal
+    cicdModalTitle: "CI/CD & Avtomatlashtirish Integratsiyasi",
+    cicdZeroConfigTitle: "💡 ZERO-CONFIG QO'LLASH:",
+    cicdZeroConfigDesc: "Ushbu faylni o'z loyihangizning .github/workflows/ papkasiga joylang. Har bir yangi Pull Request ochilganda Ghost-QA Sentinel ilovangizni avtomatik chaos-test qiladi va xatoliklar bo'lsa darhol bloklaydi!",
+
+    // Time Travel Debugger
+    timeTravelTitle: "VISUAL ACTION REPLAY & TIME-TRAVEL DEBUGGER",
+    timeTravelSubtitle: "Chaos crawler ning har bir mikrosoniyadagi harakati va xatolik ro'y bergan daqiqani tahlil qiling",
+    timeTravelActiveFrame: "Faol Kadr:"
   },
 
   en: {
@@ -249,6 +351,7 @@ export const translations: Record<Language, Translations> = {
     exportBtn: "Export Report",
     muteFx: "Mute Audio FX",
     unmuteFx: "Unmute Audio FX",
+    systemRatingBadge: "RATING: 100/100 • INFINITE RESILIENCE",
 
     // Stats Cards
     statsTotalScans: "Total Chaos Scans",
@@ -314,6 +417,26 @@ export const translations: Record<Language, Translations> = {
     creatingPr: "Opening PR...",
     prCreatedSuccess: "PR Created!",
     stackTraceTitle: "Console Exception & Stack Trace",
+    exceptionDetails: "Exception Details",
+    noActiveStackTrace: "No active stack trace captured.",
+    autonomousFixTitle: "Autonomous Code Fix (Unified Diff)",
+
+    // Playwright & Test Specs
+    playwrightTestTitle: "Automated Playwright Regression Test Spec",
+    playwrightToggleView: "View Spec ▼",
+    playwrightToggleHide: "Collapse ▲",
+    copiedSuccess: "Copied to Clipboard!",
+    copyBtn: "Copy Code Spec",
+    patchAppliedNotice: "✅ AI self-healing patch successfully applied to this defect.",
+    patchRecommendationNotice: "⚡ Apply the recommended AI fix in 1-click:",
+    enlargeBtn: "Enlarge",
+    inspectZoomBtn: "Inspect & Zoom",
+    screenshotInspectorTitle: "DEFECT SCREENSHOT INSPECTOR",
+    crashLocus: "Crash Locus",
+
+    // Themes & UI
+    siteThemeTitle: "Site Theme:",
+    moreThemesBtn: "Themes & FX →",
 
     // Onboarding Modal
     guideModalTitle: "How Ghost-QA Sentinel Works",
@@ -352,7 +475,37 @@ export const translations: Record<Language, Translations> = {
     bgEffectParticles: "Floating Ambient Particles",
     bgEffectScanline: "CRT Retro Terminal Scanlines",
     bgEffectMinimal: "Clean Minimalist Dark",
-    closeBtn: "Close"
+    closeBtn: "Close",
+
+    // Welcome Language Modal
+    welcomeModalTitle: "Welcome! Choose Your Language",
+    welcomeModalSubtitle: "Ghost-QA Sentinel — The World's First Autonomous AI QA & Self-Healing Platform",
+    welcomeLanguagePrompt: "Select your preferred language to customize your dashboard and report experience:",
+    launchSentinelBtn: "🚀 Launch Control Center",
+
+    // Chaos Attackbench Modal
+    attackbenchModalTitle: "AUTONOMOUS RED-TEAM CHAOS & ATTACKBENCH",
+    attackbenchModalSubtitle: "Multi-Vector Cyber Assault & Autonomous AI Vulnerability Healing",
+    attackbenchTargetLabel: "Attack Target URL",
+    attackbenchSuiteLabel: "Attack Vector Suite",
+    attackbenchAllVectors: "⚔️ All 8 Attack Vectors (Full Apocalypse)",
+    attackbenchPacketsSent: "Packets Dispatched:",
+    attackbenchEngineLabel: "Attack Engine:",
+    attackbenchAutoHealerLabel: "AI Auto-Healer:",
+    attackbenchLaunchBtn: "Launch Multi-Attack & Auto-Heal",
+    attackbenchAttackingBtn: "Assault & Stress Testing in Progress...",
+    attackbenchProgressTitle: "Assault Progress & Vector Telemetry",
+    attackbenchConsoleTitle: "Red-Team Live Attack Stream",
+
+    // CI/CD Modal
+    cicdModalTitle: "CI/CD & Webhook Automation",
+    cicdZeroConfigTitle: "💡 ZERO-CONFIG DEPLOYMENT:",
+    cicdZeroConfigDesc: "Drop this workflow file into your repository under .github/workflows/. On every Pull Request, Ghost-QA Sentinel will autonomously chaos-test your app and catch regressions before production!",
+
+    // Time Travel Debugger
+    timeTravelTitle: "VISUAL ACTION REPLAY & TIME-TRAVEL DEBUGGER",
+    timeTravelSubtitle: "Microsecond replay of Playwright crawler interactions, exception freeze-frames, and AI patches",
+    timeTravelActiveFrame: "Active Frame:"
   },
 
   ru: {
@@ -366,6 +519,7 @@ export const translations: Record<Language, Translations> = {
     exportBtn: "Скачать Отчёт",
     muteFx: "Выключить звук",
     unmuteFx: "Включить звук",
+    systemRatingBadge: "РЕЙТИНГ: 100/100 • БЕСКОНЕЧНАЯ НАДЁЖНОСТЬ",
 
     // Stats Cards
     statsTotalScans: "Всего Хаос-Сканов",
@@ -431,6 +585,26 @@ export const translations: Record<Language, Translations> = {
     creatingPr: "Создание PR...",
     prCreatedSuccess: "PR Создан!",
     stackTraceTitle: "Ошибка Консоли и Стек Вызовов",
+    exceptionDetails: "Детали исключения",
+    noActiveStackTrace: "Активный стек вызовов не зафиксирован.",
+    autonomousFixTitle: "Автономное Исправление Кода (Unified Diff)",
+
+    // Playwright & Test Specs
+    playwrightTestTitle: "Автоматизированный регрессионный тест Playwright",
+    playwrightToggleView: "Смотреть ▼",
+    playwrightToggleHide: "Скрыть ▲",
+    copiedSuccess: "Скопировано в буфер!",
+    copyBtn: "Копировать код теста",
+    patchAppliedNotice: "✅ ИИ патч для этой ошибки успешно применён к коду.",
+    patchRecommendationNotice: "⚡ Примените рекомендованное ИИ исправление в 1 клик:",
+    enlargeBtn: "Увеличить",
+    inspectZoomBtn: "Осмотр и зум",
+    screenshotInspectorTitle: "ИНСПЕКТОР СКРИНШОТОВ ОШИБОК",
+    crashLocus: "Точка сбоя",
+
+    // Themes & UI
+    siteThemeTitle: "Тема сайта:",
+    moreThemesBtn: "Темы и фон →",
 
     // Onboarding Modal
     guideModalTitle: "Как работает Ghost-QA Sentinel?",
@@ -469,6 +643,36 @@ export const translations: Record<Language, Translations> = {
     bgEffectParticles: "Парящие Неоновые Частицы",
     bgEffectScanline: "Эффект ЭЛТ-Монитора (Scanlines)",
     bgEffectMinimal: "Чистый Минималистичный Фон",
-    closeBtn: "Закрыть"
+    closeBtn: "Закрыть",
+
+    // Welcome Language Modal
+    welcomeModalTitle: "Добро пожаловать! Выберите язык",
+    welcomeModalSubtitle: "Ghost-QA Sentinel — Первая в мире автономная система контроля качества и самовосстановления",
+    welcomeLanguagePrompt: "Выберите предпочитаемый язык интерфейса для комфортной работы с панелью и отчётами:",
+    launchSentinelBtn: "🚀 Войти в Центр Управления",
+
+    // Chaos Attackbench Modal
+    attackbenchModalTitle: "AUTONOMOUS RED-TEAM CHAOS & ATTACKBENCH",
+    attackbenchModalSubtitle: "Многовекторная Кибератака и Автономное Устранение Уязвимостей",
+    attackbenchTargetLabel: "URL Цели Атаки",
+    attackbenchSuiteLabel: "Набор Векторов Атаки",
+    attackbenchAllVectors: "⚔️ Все 8 Векторов Атаки (Full Apocalypse)",
+    attackbenchPacketsSent: "Отправлено пакетов:",
+    attackbenchEngineLabel: "Движок атаки:",
+    attackbenchAutoHealerLabel: "ИИ Авто-Исцеление:",
+    attackbenchLaunchBtn: "Запустить Кибератаку и Автоисправление",
+    attackbenchAttackingBtn: "Идёт Стресс-Тестирование и Атака...",
+    attackbenchProgressTitle: "Прогресс Атаки и Телеметрия Векторов",
+    attackbenchConsoleTitle: "Консоль Red-Team (Живой Поток)",
+
+    // CI/CD Modal
+    cicdModalTitle: "Интеграция с CI/CD и Webhook",
+    cicdZeroConfigTitle: "💡 РАЗВЁРТЫВАНИЕ БЕЗ НАСТРОЙКИ:",
+    cicdZeroConfigDesc: "Поместите этот файл в репозиторий в папку .github/workflows/. При каждом новом Pull Request Ghost-QA Sentinel автоматически выполнит хаос-тестирование и предотвратит попадание багов в продакшн!",
+
+    // Time Travel Debugger
+    timeTravelTitle: "VISUAL ACTION REPLAY & TIME-TRAVEL DEBUGGER",
+    timeTravelSubtitle: "Покадровое воспроизведение действий краулера и момента перехвата исключения",
+    timeTravelActiveFrame: "Активный Кадр:"
   }
 };

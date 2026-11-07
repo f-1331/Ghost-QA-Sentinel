@@ -256,7 +256,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
         {/* Error message */}
         <div className="bg-[#0b101c] border border-sentinel-border rounded-xl p-3.5 font-mono text-xs text-red-300">
           <div className="text-gray-500 text-[11px] uppercase tracking-wider mb-1">
-            {lang === "uz" ? "Yuzaga kelgan xatolik" : lang === "ru" ? "Исключение" : "Exception Details"}:
+            {t.exceptionDetails}:
           </div>
           <div className="font-bold break-words">{incident.message}</div>
         </div>
@@ -275,7 +275,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                 )}
               </div>
               <pre className="text-[11px] font-mono text-gray-400 whitespace-pre-wrap break-all max-h-36 overflow-y-auto leading-relaxed bg-black/40 p-2 rounded border border-gray-800">
-                {incident.stack_trace || "No active stack trace captured."}
+                {incident.stack_trace || t.noActiveStackTrace}
               </pre>
             </div>
 
@@ -302,7 +302,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                 className="text-[11px] text-sentinel-cyan hover:underline font-mono flex items-center gap-1"
               >
                 <Maximize2 className="w-3 h-3" />
-                <span>Kattalashtirish</span>
+                <span>{t.enlargeBtn}</span>
               </button>
             </div>
 
@@ -322,7 +322,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-mono font-medium gap-1.5 backdrop-blur-[2px]">
                   <Crosshair className="w-4 h-4 text-sentinel-cyan animate-pulse" />
-                  <span>Tekshirish & Zoom</span>
+                  <span>{t.inspectZoomBtn}</span>
                 </div>
               </div>
             ) : (
@@ -347,7 +347,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                 </div>
                 <div className="text-[10px] font-mono text-sentinel-cyan flex items-center justify-between">
                   <span>DOM Blueprint Viewer</span>
-                  <span className="group-hover:translate-x-1 transition-transform">Kattalashtirish →</span>
+                  <span className="group-hover:translate-x-1 transition-transform">{t.enlargeBtn} →</span>
                 </div>
               </div>
             )}
@@ -399,10 +399,10 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
           >
             <span className="flex items-center gap-2">
               <FlaskConical className="w-3.5 h-3.5 text-sentinel-cyan" />
-              <span>Avtomatlashtirilgan Playwright Regressiya Testi</span>
+              <span>{t.playwrightTestTitle}</span>
             </span>
             <span className="text-sentinel-cyan text-[11px] underline">
-              {showTestSpec ? "Yopish ▲" : "Ko'rish ▼"}
+              {showTestSpec ? t.playwrightToggleHide : t.playwrightToggleView}
             </span>
           </button>
 
@@ -413,7 +413,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                 className="absolute top-4 right-4 p-1.5 rounded-lg bg-sentinel-card border border-sentinel-border text-gray-300 hover:text-white flex items-center gap-1 text-[10px] font-mono"
               >
                 {copiedTest ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                <span>{copiedTest ? "Nusxalandi" : "Nusxalash"}</span>
+                <span>{copiedTest ? t.copiedSuccess : t.copyBtn}</span>
               </button>
               <pre className="text-[11px] font-mono text-cyan-200/90 overflow-x-auto p-2 leading-relaxed">
                 {generatedPlaywrightSpec}
@@ -426,8 +426,8 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
         <div className="pt-3 border-t border-sentinel-border flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-xs text-gray-500 font-mono">
             {incident.status === "PATCHED"
-              ? "✅ Ushbu xatolik uchun AI patchi muvaffaqiyatli qo'llangan."
-              : "⚡ Tavsiya etilgan tuzatishni 1-bosishda qo'llang:"}
+              ? t.patchAppliedNotice
+              : t.patchRecommendationNotice}
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -491,7 +491,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-mono text-xs sm:text-sm font-bold text-white tracking-wide truncate">
-                        XATOLIK SKRINSHOT INSPEKTORI
+                        {t.screenshotInspectorTitle}
                       </h3>
                       <span className="text-[10px] px-2 py-0.5 rounded bg-sentinel-card border border-sentinel-border text-sentinel-cyan font-mono font-semibold shrink-0">
                         {incident.bug_type}
@@ -507,7 +507,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                   title="Yopish (Esc)"
                 >
                   <X className="w-4 h-4" />
-                  <span className="text-[11px] sm:text-xs">✕ Yopish</span>
+                  <span className="text-[11px] sm:text-xs">✕ {t.closeBtn}</span>
                 </button>
               </div>
 
@@ -561,7 +561,7 @@ test('Guard against regression: ${incident.bug_type} on ${incident.selector || "
                     title="Defekt lokatsiyasi to'sig'ini ko'rsatish/yashirish"
                   >
                     <Crosshair className="w-3 h-3 text-red-400" />
-                    <span>Crash Locus</span>
+                    <span>{t.crashLocus}</span>
                   </button>
 
                   {/* Download Screenshot */}

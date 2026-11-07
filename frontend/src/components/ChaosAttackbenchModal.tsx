@@ -63,6 +63,8 @@ export const ChaosAttackbenchModal: React.FC<ChaosAttackbenchModalProps> = ({
   ]);
   const [foundVulnerabilities, setFoundVulnerabilities] = useState<any[]>([]);
 
+  const t = translations[lang] || translations.uz;
+
   if (!isOpen) return null;
 
   const addLog = (msg: string) => {
@@ -194,14 +196,14 @@ export const ChaosAttackbenchModal: React.FC<ChaosAttackbenchModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest text-rose-400 block font-bold">
-                  AUTONOMOUS RED-TEAM CHAOS & ATTACKBENCH
+                  {t.attackbenchModalTitle}
                 </span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-red-500/20 text-red-300 border border-red-500/40 font-mono">
                   8 VECTORS ACTIVE
                 </span>
               </div>
               <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                Saytga Keng Ko'lamli Hujumlar Uyushtirish va Xatoliklarni Avtomatik Tuzatish
+                {t.attackbenchModalSubtitle}
               </h2>
             </div>
           </div>
@@ -222,13 +224,13 @@ export const ChaosAttackbenchModal: React.FC<ChaosAttackbenchModalProps> = ({
               <div className="md:col-span-7 space-y-1">
                 <label className="text-[11px] font-mono uppercase tracking-wider text-gray-300 font-bold flex items-center gap-1.5">
                   <Radio className="w-3.5 h-3.5 text-rose-500" />
-                  <span>Hujum Nishoni (Target URL)</span>
+                  <span>{t.attackbenchTargetLabel}</span>
                 </label>
                 <input
                   type="text"
                   value={targetUrl}
                   onChange={(e) => setTargetUrl(e.target.value)}
-                  placeholder="http://localhost:8000/sandbox yoki https://myapp.com"
+                  placeholder="http://localhost:8000/sandbox"
                   className="w-full bg-black/60 border border-sentinel-border rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder-gray-600 focus:outline-none focus:border-red-500"
                 />
               </div>
@@ -236,14 +238,14 @@ export const ChaosAttackbenchModal: React.FC<ChaosAttackbenchModalProps> = ({
               <div className="md:col-span-5 space-y-1">
                 <label className="text-[11px] font-mono uppercase tracking-wider text-gray-300 font-bold flex items-center gap-1.5">
                   <Flame className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Hujum Vektori Suite</span>
+                  <span>{t.attackbenchSuiteLabel}</span>
                 </label>
                 <select
                   value={attackMode}
                   onChange={(e) => setAttackMode(e.target.value as any)}
                   className="w-full bg-black/60 border border-sentinel-border rounded-xl px-3 py-2.5 text-xs font-mono text-gray-200 focus:outline-none focus:border-red-500"
                 >
-                  <option value="FULL_ASSAULT">⚔️ Barcha 8 ta Hujum Vektori (Full Apocalypse)</option>
+                  <option value="FULL_ASSAULT">{t.attackbenchAllVectors}</option>
                   <option value="OWASP_HEADERS">🛡️ 1. OWASP Headers (CSP & Clickjacking)</option>
                   <option value="INPUT_FUZZ_XSS">🎭 2. Multi-Vector XSS & Script Fuzzing</option>
                   <option value="SQLI_PROBE">💉 3. SQL Injection & DB Error Leak</option>
@@ -259,15 +261,15 @@ export const ChaosAttackbenchModal: React.FC<ChaosAttackbenchModalProps> = ({
             {/* Live Telemetry Meters */}
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-800 text-[11px] font-mono">
               <div className="bg-black/50 p-2 rounded border border-gray-800 flex items-center justify-between">
-                <span className="text-gray-400">Yuborilgan so'rovlar:</span>
+                <span className="text-gray-400">{t.attackbenchPacketsSent}:</span>
                 <span className="text-rose-400 font-bold">{packetsFired} req</span>
               </div>
               <div className="bg-black/50 p-2 rounded border border-gray-800 flex items-center justify-between">
-                <span className="text-gray-400">Hujum Dvigateli:</span>
+                <span className="text-gray-400">{t.attackbenchEngineLabel}:</span>
                 <span className="text-sentinel-cyan font-bold">Playwright Headless</span>
               </div>
               <div className="bg-black/50 p-2 rounded border border-gray-800 flex items-center justify-between">
-                <span className="text-gray-400">AI Auto-Healer:</span>
+                <span className="text-gray-400">{t.attackbenchAutoHealerLabel}:</span>
                 <span className="text-emerald-400 font-bold">Gemini 3.8 Active</span>
               </div>
             </div>
@@ -283,7 +285,7 @@ export const ChaosAttackbenchModal: React.FC<ChaosAttackbenchModalProps> = ({
               }`}
             >
               <Swords className="w-4 h-4 text-white" />
-              <span>{isAttacking ? "Hujum & Stress Sinovi Bajarilmoqda..." : "Hujumni Boshlash va Xatolarni Tuzatish (Launch Multi-Attack & Auto-Heal)"}</span>
+              <span>{isAttacking ? t.attackbenchAttackingBtn : t.attackbenchLaunchBtn}</span>
             </button>
           </div>
 
@@ -291,7 +293,7 @@ export const ChaosAttackbenchModal: React.FC<ChaosAttackbenchModalProps> = ({
           {isAttacking && (
             <div className="space-y-1 font-mono">
               <div className="flex items-center justify-between text-[11px] text-gray-400">
-                <span>Hujum va Tahlil Jarayoni (Assault Progress)</span>
+                <span>{t.attackbenchProgressTitle}</span>
                 <span className="text-rose-400 font-bold">{attackProgress}%</span>
               </div>
               <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden border border-gray-800">
@@ -347,7 +349,7 @@ export const ChaosAttackbenchModal: React.FC<ChaosAttackbenchModalProps> = ({
             <div className="flex items-center justify-between text-xs font-mono text-gray-400 border-b border-gray-800/80 pb-2">
               <span className="flex items-center gap-1.5 text-rose-400">
                 <Terminal className="w-3.5 h-3.5" />
-                <span>Red-Team Hujum Konsoli (Live Attack Stream)</span>
+                <span>{t.attackbenchConsoleTitle}</span>
               </span>
               <span className="text-[10px] text-gray-500">Autonomous Telemetry</span>
             </div>
