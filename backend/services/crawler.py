@@ -136,8 +136,9 @@ class GhostCrawler:
 
             # Step 1: Navigate
             await self.log("INFO", f"🌐 Navigating to {url} and waiting for DOM ready...")
+            initial_resp = None
             try:
-                await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+                initial_resp = await page.goto(url, wait_until="domcontentloaded", timeout=15000)
                 await asyncio.sleep(1.0)
                 await self.log("SUCCESS", f"✅ Initial page load complete for {url}")
             except Exception as e:
@@ -166,8 +167,17 @@ class GhostCrawler:
                     self.incidents.append(inc)
                 current_interaction_errors.clear()
 
-            # Step 2: Chaos & Monkey Testing
-            await self.log("INFO", "🐒 Initiating Chaos Monkey interactive DOM inspection...")
+            # Phase 2: OWASP Defensive Security & SSL Protocol Audit
+            await self._audit_security_and_headers(page=page, scan_id=scan_id, url=url, initial_resp=initial_resp)
+
+            # Phase 3: Typography & Text Overlap Inspector ("harflar qo'shilib ketmaganmi")
+            await self._audit_typography_and_text(page=page, scan_id=scan_id)
+
+            # Phase 4: 📱 Mobile Phone Viewport (390x844) & Responsive Ergonomics Audit
+            await self._audit_mobile_responsiveness(page=page, scan_id=scan_id)
+
+            # Phase 5: Chaos & Monkey Interactive DOM Inspection
+            await self.log("INFO", "🐒 [Phase 5/5] Initiating Chaos Monkey interactive DOM inspection...")
             
             # Find interactive targets
             selectors = [
@@ -285,6 +295,178 @@ class GhostCrawler:
             await self.log("INFO", f"🏁 Chaos testing complete. Discovered {len(self.incidents)} distinct defect incidents.")
             await browser.close()
             return self.incidents
+
+    async def _audit_security_and_headers(self, page: Page, scan_id: str, url: str, initial_resp: Optional[Response]):
+        await self.log("INFO", "🛡️ [Phase 2/5] Comprehensive OWASP Defensive Security & Protocol Audit...")
+        # 1. Plain HTTP Check
+        if url.startswith("http://") and "localhost" not in url and "127.0.0.1" not in url:
+            await self.log("WARN", "⚠️ Insecure Protocol: Target transmits data over unencrypted HTTP (No SSL/TLS).")
+            inc = await self._capture_incident(
+                page=page,
+                scan_id=scan_id,
+                bug_type="INSECURE_HTTP_PROTOCOL",
+                message="Target website operates over unencrypted HTTP protocol without SSL/TLS certificate. High risk of Man-In-The-Middle (MITM) snooping.",
+                severity="HIGH",
+                selector="protocol://http"
+            )
+            self.incidents.append(inc)
+
+        # 2. Defensive HTTP Headers
+        if initial_resp:
+            headers = {k.lower(): v for k, v in initial_resp.headers.items()}
+            missing = []
+            if "content-security-policy" not in headers:
+                missing.append("Content-Security-Policy (CSP)")
+            if "x-frame-options" not in headers:
+                missing.append("X-Frame-Options (Clickjacking guard)")
+            if "x-content-type-options" not in headers:
+                missing.append("X-Content-Type-Options (MIME sniff guard)")
+            if "strict-transport-security" not in headers and url.startswith("https://"):
+                missing.append("Strict-Transport-Security (HSTS)")
+
+            if missing:
+                await self.log("WARN", f"⚠️ Missing OWASP Security Headers: {', '.join(missing)}")
+                inc = await self._capture_incident(
+                    page=page,
+                    scan_id=scan_id,
+                    bug_type="SECURITY_HEADER_MISSING",
+                    message=f"Missing recommended enterprise security headers: {', '.join(missing)}. Vulnerable to Clickjacking, XSS, and MIME injection.",
+                    severity="HIGH",
+                    selector="http.headers"
+                )
+                self.incidents.append(inc)
+
+    async def _audit_typography_and_text(self, page: Page, scan_id: str):
+        await self.log("INFO", "🔤 [Phase 3/5] Typography, Glyph Clipping & Text Collision Inspector...")
+        try:
+            text_issues = await page.evaluate("""() => {
+                const results = [];
+                const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, a, button, label'));
+                
+                for (const el of elements) {
+                    if (!el.offsetParent && el.tagName.toLowerCase() !== 'body') continue;
+                    const style = window.getComputedStyle(el);
+                    const fontSize = parseFloat(style.fontSize) || 16;
+                    const lineHeight = parseFloat(style.lineHeight) || (fontSize * 1.2);
+
+                    // 1. Line-height collision: text glyphs squishing into each other vertically
+                    if (lineHeight < fontSize * 0.92 && el.clientHeight > fontSize * 1.5) {
+                        results.push({
+                            type: 'TEXT_COLLISION_LINE_HEIGHT',
+                            selector: el.tagName.toLowerCase() + (el.id ? '#' + el.id : el.className ? '.' + el.className.toString().split(' ')[0] : ''),
+                            message: `Harflar qo'shilib ketishi (Line-height collision): '${el.innerText.trim().slice(0, 45)}...' elementida line-height (${lineHeight}px) font-size (${fontSize}px) dan kichik. Harflar bir-birining ustiga minib qolgan.`,
+                            severity: 'MEDIUM'
+                        });
+                        break;
+                    }
+
+                    // 2. Horizontal text clipping without ellipsis
+                    if (el.scrollWidth > el.clientWidth + 6 && style.overflow === 'hidden' && style.textOverflow !== 'ellipsis' && el.clientWidth > 40) {
+                        results.push({
+                            type: 'TEXT_OVERFLOW_CLIPPED',
+                            selector: el.tagName.toLowerCase() + (el.id ? '#' + el.id : el.className ? '.' + el.className.toString().split(' ')[0] : ''),
+                            message: `Matn qirqilib qolgan (Text clipping): '${el.innerText.trim().slice(0, 45)}...' konteynerdan toshib ketgan (scrollWidth ${el.scrollWidth}px > clientWidth ${el.clientWidth}px) va ellipsis belgisisiz kesilgan.`,
+                            severity: 'MEDIUM'
+                        });
+                        break;
+                    }
+                }
+                return results;
+            }""")
+
+            for issue in text_issues:
+                await self.log("WARN", f"⚠️ Typography Defect: {issue['message']}")
+                inc = await self._capture_incident(
+                    page=page,
+                    scan_id=scan_id,
+                    bug_type=issue['type'],
+                    message=issue['message'],
+                    severity=issue.get('severity', 'MEDIUM'),
+                    selector=issue['selector']
+                )
+                self.incidents.append(inc)
+        except Exception as e:
+            await self.log("INFO", f"Typography scan note: {str(e)[:80]}")
+
+    async def _audit_mobile_responsiveness(self, page: Page, scan_id: str):
+        await self.log("INFO", "📱 [Phase 4/5] 390x844 Mobile Viewport & Touch Ergonomics Audit...")
+        try:
+            # Switch to standard mobile phone viewport (iPhone 14 / modern Android)
+            await page.set_viewport_size({"width": 390, "height": 844})
+            await asyncio.sleep(0.6) # allow CSS media queries to reflow
+
+            mobile_report = await page.evaluate("""() => {
+                const results = [];
+                const docWidth = document.documentElement.scrollWidth;
+                const viewWidth = window.innerWidth;
+
+                // 1. Check Horizontal Scrolling (the #1 mobile UX defect!)
+                if (docWidth > viewWidth + 4) {
+                    let offender = 'body';
+                    let maxRight = 0;
+                    document.querySelectorAll('*').forEach(el => {
+                        const r = el.getBoundingClientRect();
+                        if (r.right > viewWidth + 5 && r.right > maxRight) {
+                            maxRight = r.right;
+                            offender = el.tagName.toLowerCase() + (el.id ? '#' + el.id : el.className ? '.' + el.className.toString().split(' ')[0] : '');
+                        }
+                    });
+                    results.push({
+                        type: 'LAYOUT_MOBILE_OVERFLOW',
+                        selector: offender,
+                        message: `Telefon versiyada gorizontal surilish (Mobile Horizontal Scroll Overflow): docWidth (${docWidth}px) > viewport (${viewWidth}px). Sahifa barmog'i bilan o'ngga-chapga tebranib ketmoqda. Aybdor element: ${offender}`,
+                        severity: 'HIGH'
+                    });
+                }
+
+                // 2. Check Viewport Meta Tag
+                const meta = document.querySelector('meta[name="viewport"]');
+                if (!meta || !meta.getAttribute('content') || !meta.getAttribute('content').includes('width=device-width')) {
+                    results.push({
+                        type: 'MOBILE_VIEWPORT_MISSING',
+                        selector: 'head > meta[name="viewport"]',
+                        message: "Mobil qurilmalar uchun <meta name='viewport' content='width=device-width, initial-scale=1.0'> tegi yo'q yoki noto'g'ri sozlangan.",
+                        severity: 'HIGH'
+                    });
+                }
+
+                // 3. Check Tiny Touch Targets (Buttons smaller than 32px on mobile)
+                const touchables = Array.from(document.querySelectorAll('button, a, input[type="button"], [role="button"]'));
+                for (const t of touchables) {
+                    if (!t.offsetParent) continue;
+                    const rect = t.getBoundingClientRect();
+                    if (rect.width > 0 && rect.height > 0 && (rect.width < 32 || rect.height < 32)) {
+                        const sel = t.tagName.toLowerCase() + (t.id ? '#' + t.id : t.className ? '.' + t.className.toString().split(' ')[0] : '');
+                        results.push({
+                            type: 'TOUCH_TARGET_COLLISION',
+                            selector: sel,
+                            message: `Sensorli tugma o'lchami kichik (${Math.round(rect.width)}x${Math.round(rect.height)}px). Barmoq bilan bosish qiyin va qo'shni elementlarga tegib ketadi (Minimal 44x44px tavsiya etiladi).`,
+                            severity: 'MEDIUM'
+                        });
+                        break;
+                    }
+                }
+
+                return results;
+            }""")
+
+            for issue in mobile_report:
+                await self.log("WARN", f"📱 Mobile Defect Detected: {issue['message']}")
+                inc = await self._capture_incident(
+                    page=page,
+                    scan_id=scan_id,
+                    bug_type=issue['type'],
+                    message=issue['message'],
+                    severity=issue.get('severity', 'HIGH'),
+                    selector=issue['selector']
+                )
+                self.incidents.append(inc)
+
+            # Revert viewport to desktop for interactive monkey crawling
+            await page.set_viewport_size({"width": 1280, "height": 800})
+            await asyncio.sleep(0.4)
+        except Exception as e:
+            await self.log("INFO", f"Mobile responsive scan note: {str(e)[:80]}")
 
     async def _capture_incident(
         self,
