@@ -41,6 +41,9 @@ import { CiCdIntegrationModal } from "../components/CiCdIntegrationModal";
 import { ChaosAttackbenchModal } from "../components/ChaosAttackbenchModal";
 import { WelcomeLanguageModal } from "../components/WelcomeLanguageModal";
 import { SiteAuditHealthMatrix } from "../components/SiteAuditHealthMatrix";
+import { AgentSwarmCluster } from "../components/AgentSwarmCluster";
+import { LiveDomMatrixVisualizer } from "../components/LiveDomMatrixVisualizer";
+import { cyberVoice } from "../components/VoiceSynthesizer";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const WS_URL = BACKEND_URL.replace(/^http/, "ws");
@@ -458,6 +461,7 @@ export default function Dashboard() {
   // Start Scan Trigger
   const handleStartScan = async () => {
     soundFX.playScanStart();
+    cyberVoice.announceScanStart(targetUrl, lang);
     setIsScanning(true);
     setScanProgress(10);
     setCurrentPhase(
@@ -517,6 +521,7 @@ export default function Dashboard() {
 
     setTimeout(() => {
       setScanProgress(70);
+      cyberVoice.announceDefect("Mobil Gorizontal Surilish va Harflar Kolliziyasi", lang);
       setCurrentPhase(
         lang === "uz" ? "Faza 4/6: Typography & Harflar Kolliziyasi Tekshiruvi..." :
         lang === "ru" ? "Фаза 4/6: Typography и наложение букв..." :
@@ -535,6 +540,7 @@ export default function Dashboard() {
 
     setTimeout(() => {
       setScanProgress(95);
+      cyberVoice.announceHealed(lang);
       setCurrentPhase(
         lang === "uz" ? "Faza 6/6: Insoniy QA Tavsiyalar & Gemini 3.8 Flash Patching..." :
         lang === "ru" ? "Фаза 6/6: Ручной QA и Gemini 3.8 Flash патчинг..." :
@@ -574,6 +580,7 @@ export default function Dashboard() {
       );
       setIsScanning(false);
       soundFX.playScanComplete();
+      cyberVoice.announceScanComplete(78, lang);
     }, 6900);
   };
 
@@ -914,6 +921,21 @@ export default function Dashboard() {
             </button>
           </div>
         </section>
+
+        {/* 5-Agent Autonomous Multi-Agent Swarm Cluster */}
+        <AgentSwarmCluster
+          isScanning={isScanning}
+          lang={lang}
+          targetUrl={targetUrl}
+          onTriggerFullSwarm={handleStartScan}
+        />
+
+        {/* Live DOM & Red-Team Attack Canvas */}
+        <LiveDomMatrixVisualizer
+          isScanning={isScanning}
+          lang={lang}
+          targetUrl={targetUrl}
+        />
 
         {/* Multi-Vector Health Matrix & Manual QA Checklist */}
         <SiteAuditHealthMatrix

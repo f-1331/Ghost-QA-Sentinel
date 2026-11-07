@@ -19,9 +19,12 @@ import {
   Globe,
   Sparkles,
   Workflow,
-  Swords
+  Swords,
+  Mic,
+  MicOff
 } from "lucide-react";
 import { soundFX } from "./SoundEffects";
+import { cyberVoice } from "./VoiceSynthesizer";
 import { Language, translations } from "./i18n";
 import { ThemeId } from "./ThemeCustomizer";
 
@@ -61,8 +64,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentTheme
 }) => {
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const t = translations[lang];
+
+  const toggleVoice = () => {
+    const newState = cyberVoice.toggleVoice();
+    setVoiceEnabled(newState);
+    soundFX.playClick();
+  };
 
   const toggleSound = () => {
     const newState = !soundEnabled;
@@ -253,6 +263,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
           </div>
+
+          {/* Cyber Voice Announcer Toggle */}
+          <button
+            onClick={toggleVoice}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all shrink-0 ${
+              voiceEnabled
+                ? "bg-purple-950/40 border-purple-500/40 text-purple-300 shadow-sm shadow-purple-500/20"
+                : "bg-sentinel-card border-gray-800 text-gray-500"
+            }`}
+            title={voiceEnabled ? "Cyber Voice Announcer Faol (Mute)" : "Cyber Voice Announcer O'chirilgan (Yoqish)"}
+          >
+            {voiceEnabled ? <Mic className="w-3.5 h-3.5 text-purple-400 animate-pulse" /> : <MicOff className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">Voice</span>
+          </button>
 
           {/* Audio FX Toggle */}
           <button
