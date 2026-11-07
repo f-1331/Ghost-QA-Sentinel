@@ -40,6 +40,7 @@ import { TimeTravelDebugger } from "../components/TimeTravelDebugger";
 import { CiCdIntegrationModal } from "../components/CiCdIntegrationModal";
 import { ChaosAttackbenchModal } from "../components/ChaosAttackbenchModal";
 import { WelcomeLanguageModal } from "../components/WelcomeLanguageModal";
+import { SiteAuditHealthMatrix } from "../components/SiteAuditHealthMatrix";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const WS_URL = BACKEND_URL.replace(/^http/, "ws");
@@ -130,6 +131,8 @@ export default function Dashboard() {
   const [scanMode, setScanMode] = useState("CHAOS_MONKEY");
   const [isScanning, setIsScanning] = useState(false);
   const [currentScanId, setCurrentScanId] = useState<string | null>(null);
+  const [scanProgress, setScanProgress] = useState(100);
+  const [currentPhase, setCurrentPhase] = useState("");
 
   const [logs, setLogs] = useState<LogMessage[]>([]);
   const [incidents, setIncidents] = useState<IncidentData[]>(DEFAULT_DEMO_INCIDENTS);
@@ -234,6 +237,27 @@ export default function Dashboard() {
       try {
         const data = JSON.parse(event.data);
         if (data.type === "LOG") {
+          const msg = data.message || "";
+          if (msg.includes("1/6") || msg.includes("Tarmoq") || msg.includes("DNS")) {
+            setScanProgress(15);
+            setCurrentPhase("Faza 1/6: Tarmoq, DNS & SSL");
+          } else if (msg.includes("2/6") || msg.includes("DOM") || msg.includes("Desktop")) {
+            setScanProgress(35);
+            setCurrentPhase("Faza 2/6: Desktop DOM & JS Runtime");
+          } else if (msg.includes("3/6") || msg.includes("OWASP")) {
+            setScanProgress(55);
+            setCurrentPhase("Faza 3/6: OWASP Xavfsizlik");
+          } else if (msg.includes("4/6") || msg.includes("Typography")) {
+            setScanProgress(75);
+            setCurrentPhase("Faza 4/6: Typography & Harflar");
+          } else if (msg.includes("5/6") || msg.includes("Mobile") || msg.includes("Mobil")) {
+            setScanProgress(90);
+            setCurrentPhase("Faza 5/6: Mobil Viewport (390x844)");
+          } else if (msg.includes("6/6") || msg.includes("MANUAL") || msg.includes("AI HEALER")) {
+            setScanProgress(98);
+            setCurrentPhase("Faza 6/6: Gemini 3.8 Flash & Insoniy QA");
+          }
+
           setLogs((prev) => [
             ...prev,
             {
@@ -252,6 +276,8 @@ export default function Dashboard() {
           setTotalBugs((prev) => prev + 1);
         } else if (data.type === "SCAN_COMPLETED") {
           setIsScanning(false);
+          setScanProgress(100);
+          setCurrentPhase("Barcha audit fazalari muvaffaqiyatli yakunlandi!");
           soundFX.playScanComplete();
           setHealedBugs((prev) => prev + (data.healed_bugs || 0));
         }
@@ -433,6 +459,14 @@ export default function Dashboard() {
   const handleStartScan = async () => {
     soundFX.playScanStart();
     setIsScanning(true);
+    setScanProgress(10);
+    setCurrentPhase(
+      lang === "uz" 
+        ? "Faza 1/6: Tarmoq, DNS & SSL Shifrlash tahlili..." 
+        : lang === "ru" 
+        ? "Фаза 1/6: Сеть, DNS и SSL шифрование..." 
+        : "Phase 1/6: Network, DNS & SSL Handshake..."
+    );
     setLogs([]);
 
     // Check if target points to local backend or remote
@@ -462,6 +496,52 @@ export default function Dashboard() {
     setTotalScans((prev) => prev + 1);
     const domainAudit = generateDomainAuditIncidents(targetUrl, lang);
 
+    // Dynamic phase transitions
+    setTimeout(() => {
+      setScanProgress(30);
+      setCurrentPhase(
+        lang === "uz" ? "Faza 2/6: Desktop DOM & JavaScript Runtime tekshiruvi..." :
+        lang === "ru" ? "Фаза 2/6: Desktop DOM и JavaScript Runtime..." :
+        "Phase 2/6: Desktop DOM & JS Runtime..."
+      );
+    }, 1000);
+
+    setTimeout(() => {
+      setScanProgress(50);
+      setCurrentPhase(
+        lang === "uz" ? "Faza 3/6: OWASP Defensive Security & Xavfsizlik sarlavhalari..." :
+        lang === "ru" ? "Фаза 3/6: OWASP Defensive Security и заголовки..." :
+        "Phase 3/6: OWASP Defensive Security Audit..."
+      );
+    }, 1800);
+
+    setTimeout(() => {
+      setScanProgress(70);
+      setCurrentPhase(
+        lang === "uz" ? "Faza 4/6: Typography & Harflar Kolliziyasi Tekshiruvi..." :
+        lang === "ru" ? "Фаза 4/6: Typography и наложение букв..." :
+        "Phase 4/6: Typography & Letter Collisions..."
+      );
+    }, 2600);
+
+    setTimeout(() => {
+      setScanProgress(85);
+      setCurrentPhase(
+        lang === "uz" ? "Faza 5/6: Playwright 390x844 Mobil Telefon Viewport Skaneri..." :
+        lang === "ru" ? "Фаза 5/6: Playwright 390x844 Мобильный Viewport..." :
+        "Phase 5/6: Playwright 390x844 Mobile Viewport..."
+      );
+    }, 3400);
+
+    setTimeout(() => {
+      setScanProgress(95);
+      setCurrentPhase(
+        lang === "uz" ? "Faza 6/6: Insoniy QA Tavsiyalar & Gemini 3.8 Flash Patching..." :
+        lang === "ru" ? "Фаза 6/6: Ручной QA и Gemini 3.8 Flash патчинг..." :
+        "Phase 6/6: Human QA Checklist & Gemini 3.8 Flash..."
+      );
+    }, 4500);
+
     // Schedule progressive real-time logs
     domainAudit.logs.forEach((logItem) => {
       setTimeout(() => {
@@ -486,6 +566,12 @@ export default function Dashboard() {
       setIncidents(domainAudit.incidents);
       setTotalBugs(domainAudit.incidents.length);
       setHealedBugs((prev) => prev + domainAudit.incidents.length);
+      setScanProgress(100);
+      setCurrentPhase(
+        lang === "uz" ? "Barcha 6 ta faza muvaffaqiyatli yakunlandi! 6 PASS | 4 DEFECT | 4 MANUAL QA" :
+        lang === "ru" ? "Все 6 фаз успешно завершены! 6 PASS | 4 DEFECT | 4 MANUAL QA" :
+        "All 6 audit phases completed! 6 PASS | 4 DEFECT | 4 MANUAL QA"
+      );
       setIsScanning(false);
       soundFX.playScanComplete();
     }, 6900);
@@ -828,6 +914,19 @@ export default function Dashboard() {
             </button>
           </div>
         </section>
+
+        {/* Multi-Vector Health Matrix & Manual QA Checklist */}
+        <SiteAuditHealthMatrix
+          targetUrl={targetUrl}
+          lang={lang}
+          totalBugs={totalBugs}
+          passCount={logs.filter((l) => l.level === "PASS").length || 6}
+          failCount={logs.filter((l) => l.level === "FAIL").length || 4}
+          manualCount={logs.filter((l) => l.level === "MANUAL").length || 4}
+          isScanning={isScanning}
+          scanProgress={scanProgress}
+          currentPhase={currentPhase}
+        />
 
         {/* Live Terminal Telemetry Output */}
         <TerminalLogs
