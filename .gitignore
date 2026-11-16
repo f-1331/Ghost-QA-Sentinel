@@ -28,3 +28,9 @@ dist/
 Thumbs.db
 .DS_Store
 .neon
+
+# Cloudflare Tunnel & Failover state
+cloudflared.exe
+tunnel_url.txt
+failover_state.json
+
