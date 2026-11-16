@@ -4,19 +4,19 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://fish-informative-scanned-demands.trycloudflare.com/api/:match*"
+      "destination": "https://qui-weed-neighborhood-tsunami.trycloudflare.com/api/:match*"
     },
     {
       "source": "/ws/:match*",
-      "destination": "https://fish-informative-scanned-demands.trycloudflare.com/ws/:match*"
+      "destination": "https://qui-weed-neighborhood-tsunami.trycloudflare.com/ws/:match*"
     },
     {
       "source": "/screenshots/:match*",
-      "destination": "https://fish-informative-scanned-demands.trycloudflare.com/screenshots/:match*"
+      "destination": "https://qui-weed-neighborhood-tsunami.trycloudflare.com/screenshots/:match*"
     },
     {
       "source": "/sandbox/:match*",
-      "destination": "https://fish-informative-scanned-demands.trycloudflare.com/sandbox/:match*"
+      "destination": "https://qui-weed-neighborhood-tsunami.trycloudflare.com/sandbox/:match*"
     }
   ]
 }
