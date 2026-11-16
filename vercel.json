@@ -4,19 +4,19 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://likes-purposes-pas-shame.trycloudflare.com/api/:match*"
+      "destination": "https://fish-informative-scanned-demands.trycloudflare.com/api/:match*"
     },
     {
       "source": "/ws/:match*",
-      "destination": "https://likes-purposes-pas-shame.trycloudflare.com/ws/:match*"
+      "destination": "https://fish-informative-scanned-demands.trycloudflare.com/ws/:match*"
     },
     {
       "source": "/screenshots/:match*",
-      "destination": "https://likes-purposes-pas-shame.trycloudflare.com/screenshots/:match*"
+      "destination": "https://fish-informative-scanned-demands.trycloudflare.com/screenshots/:match*"
     },
     {
       "source": "/sandbox/:match*",
-      "destination": "https://likes-purposes-pas-shame.trycloudflare.com/sandbox/:match*"
+      "destination": "https://fish-informative-scanned-demands.trycloudflare.com/sandbox/:match*"
     }
   ]
 }
