@@ -285,6 +285,10 @@ async def execute_scan_pipeline(scan_id: str, target_url: str, github_repo: Opti
         scan.summary = str(e)
         scan.completed_at = datetime.utcnow()
         db.commit()
+        await manager.broadcast(scan_id, {
+            "type": "SCAN_FAILED",
+            "error": str(e)
+        })
     finally:
         db.close()
 
@@ -422,6 +426,10 @@ async def execute_attack_pipeline(scan_id: str, target_url: str, github_repo: Op
         scan.summary = str(e)
         scan.completed_at = datetime.utcnow()
         db.commit()
+        await manager.broadcast(scan_id, {
+            "type": "SCAN_FAILED",
+            "error": str(e)
+        })
     finally:
         db.close()
 

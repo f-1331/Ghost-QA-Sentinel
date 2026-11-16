@@ -236,27 +236,42 @@ export default function Dashboard() {
     const ws = new WebSocket(`${WS_URL}/ws/scan/${currentScanId}`);
     wsRef.current = ws;
 
+    // 45s absolute safety cap to ensure UI never freezes
+    const safetyTimer = setTimeout(() => {
+      setIsScanning((currentlyScanning) => {
+        if (currentlyScanning) {
+          setScanProgress(100);
+          setCurrentPhase(
+            lang === "uz" ? "Audit yakunlandi (Maksimal vaqt me'yori bo'yicha)" : "Audit finalized"
+          );
+          soundFX.playScanComplete();
+          return false;
+        }
+        return currentlyScanning;
+      });
+    }, 45000);
+
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === "LOG") {
           const msg = data.message || "";
-          if (msg.includes("1/6") || msg.includes("Tarmoq") || msg.includes("DNS")) {
+          if (msg.includes("1/") || msg.includes("Tarmoq") || msg.includes("DNS") || msg.includes("Network")) {
             setScanProgress(15);
             setCurrentPhase("Faza 1/6: Tarmoq, DNS & SSL");
-          } else if (msg.includes("2/6") || msg.includes("DOM") || msg.includes("Desktop")) {
+          } else if (msg.includes("2/") || msg.includes("DOM") || msg.includes("Desktop") || msg.includes("OWASP")) {
             setScanProgress(35);
-            setCurrentPhase("Faza 2/6: Desktop DOM & JS Runtime");
-          } else if (msg.includes("3/6") || msg.includes("OWASP")) {
-            setScanProgress(55);
-            setCurrentPhase("Faza 3/6: OWASP Xavfsizlik");
-          } else if (msg.includes("4/6") || msg.includes("Typography")) {
-            setScanProgress(75);
-            setCurrentPhase("Faza 4/6: Typography & Harflar");
-          } else if (msg.includes("5/6") || msg.includes("Mobile") || msg.includes("Mobil")) {
+            setCurrentPhase("Faza 2/6: OWASP Xavfsizlik & DOM");
+          } else if (msg.includes("3/") || msg.includes("Typography") || msg.includes("Harflar")) {
+            setScanProgress(60);
+            setCurrentPhase("Faza 3/6: Typography & Harflar");
+          } else if (msg.includes("4/") || msg.includes("Mobile") || msg.includes("Mobil") || msg.includes("Viewport")) {
+            setScanProgress(80);
+            setCurrentPhase("Faza 4/6: Mobil Telefon Viewport (390x844)");
+          } else if (msg.includes("5/") || msg.includes("Chaos") || msg.includes("Monkey") || msg.includes("Testing interactive")) {
             setScanProgress(90);
-            setCurrentPhase("Faza 5/6: Mobil Viewport (390x844)");
-          } else if (msg.includes("6/6") || msg.includes("MANUAL") || msg.includes("AI HEALER")) {
+            setCurrentPhase("Faza 5/6: Chaos Monkey DOM Tekshiruvi");
+          } else if (msg.includes("6/") || msg.includes("MANUAL") || msg.includes("AI HEALER") || msg.includes("Generated patch")) {
             setScanProgress(98);
             setCurrentPhase("Faza 6/6: Gemini 3.8 Flash & Insoniy QA");
           }
@@ -280,19 +295,47 @@ export default function Dashboard() {
         } else if (data.type === "SCAN_COMPLETED") {
           setIsScanning(false);
           setScanProgress(100);
-          setCurrentPhase("Barcha audit fazalari muvaffaqiyatli yakunlandi!");
+          setCurrentPhase(
+            lang === "uz" ? "Barcha audit fazalari muvaffaqiyatli yakunlandi!" : "All audit phases completed successfully!"
+          );
           soundFX.playScanComplete();
           setHealedBugs((prev) => prev + (data.healed_bugs || 0));
+        } else if (data.type === "SCAN_FAILED") {
+          setIsScanning(false);
+          setScanProgress(100);
+          setCurrentPhase("Audit to'xtatildi: " + (data.error || ""));
+          soundFX.playBugDetectedAlert();
         }
       } catch (e) {
         console.error("WS Parse error:", e);
       }
     };
 
+    ws.onerror = (err) => {
+      console.warn("WebSocket stream notice:", err);
+    };
+
+    ws.onclose = () => {
+      setTimeout(() => {
+        setIsScanning((currentlyScanning) => {
+          if (currentlyScanning) {
+            setScanProgress(100);
+            setCurrentPhase(
+              lang === "uz" ? "Barcha audit fazalari yakunlandi!" : "Audit completed!"
+            );
+            soundFX.playScanComplete();
+            return false;
+          }
+          return currentlyScanning;
+        });
+      }, 1500);
+    };
+
     return () => {
       ws.close();
+      clearTimeout(safetyTimer);
     };
-  }, [currentScanId]);
+  }, [currentScanId, lang]);
 
   // Intelligent Dynamic Domain Auditor (Multi-device: Desktop + 390x844 Mobile + Typography + OWASP Security)
   const generateDomainAuditIncidents = (url: string, currentLang: Language) => {
