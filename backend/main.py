@@ -29,6 +29,7 @@ from .services.crawler import GhostCrawler
 from .services.ai_healer import AIHealer
 from .services.github_service import GitHubService
 from .services.telegram_bot import TelegramSentinelBot
+from .services.security_scanner import SecurityScanner
 
 # Initialize SQLite tables
 Base.metadata.create_all(bind=engine)
@@ -56,6 +57,7 @@ app.mount("/sandbox", StaticFiles(directory=str(settings.DEMO_APP_DIR), html=Tru
 healer = AIHealer()
 github_svc = GitHubService()
 telegram_bot = TelegramSentinelBot()
+security_scanner = SecurityScanner()
 
 # Active WebSocket Connections per Scan ID
 class ConnectionManager:
@@ -102,6 +104,9 @@ class TestGenRequest(BaseModel):
     selector: Optional[str] = None
     target_file: Optional[str] = None
     error_message: str
+
+class SecurityAuditRequest(BaseModel):
+    target_url: str = f"http://localhost:{settings.PORT}/sandbox"
 
 # ==========================================
 # Built-in Broken Sandbox API Endpoints
@@ -454,6 +459,22 @@ def health_check():
         "simulation_mode": settings.SIMULATION_MODE,
         "browser_engine": "Playwright Chromium (Headless)"
     }
+
+@app.post("/api/security/audit")
+async def audit_security_post(request: SecurityAuditRequest):
+    """
+    Executes a multi-vector OWASP Defensive Security & Vulnerability Audit
+    """
+    result = await security_scanner.scan_target(request.target_url)
+    return result
+
+@app.get("/api/security/audit")
+async def audit_security_get(target_url: str = f"http://localhost:{settings.PORT}/sandbox"):
+    """
+    Executes a multi-vector OWASP Defensive Security & Vulnerability Audit (GET query param)
+    """
+    result = await security_scanner.scan_target(target_url)
+    return result
 
 @app.get("/api/neon/services")
 def get_neon_services():

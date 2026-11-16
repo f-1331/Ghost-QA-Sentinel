@@ -44,6 +44,7 @@ import { SiteAuditHealthMatrix } from "../components/SiteAuditHealthMatrix";
 import { AgentSwarmCluster } from "../components/AgentSwarmCluster";
 import { LiveDomMatrixVisualizer } from "../components/LiveDomMatrixVisualizer";
 import { cyberVoice } from "../components/VoiceSynthesizer";
+import { SecurityVulnerabilityRadar } from "../components/SecurityVulnerabilityRadar";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const WS_URL = BACKEND_URL.replace(/^http/, "ws");
@@ -991,6 +992,13 @@ export default function Dashboard() {
           isScanning={isScanning}
           scanProgress={scanProgress}
           currentPhase={currentPhase}
+        />
+
+        {/* OWASP Security Vulnerability Radar & Hardened Config Generator */}
+        <SecurityVulnerabilityRadar
+          targetUrl={targetUrl}
+          lang={lang}
+          backendUrl={BACKEND_URL}
         />
 
         {/* Live Terminal Telemetry Output */}
