@@ -1,4 +1,22 @@
 {
   "buildCommand": "cd frontend && npm install --include=dev && npm run build",
-  "outputDirectory": "frontend/.next"
+  "outputDirectory": "frontend/.next",
+  "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://likes-purposes-pas-shame.trycloudflare.com/api/:match*"
+    },
+    {
+      "source": "/ws/:match*",
+      "destination": "https://likes-purposes-pas-shame.trycloudflare.com/ws/:match*"
+    },
+    {
+      "source": "/screenshots/:match*",
+      "destination": "https://likes-purposes-pas-shame.trycloudflare.com/screenshots/:match*"
+    },
+    {
+      "source": "/sandbox/:match*",
+      "destination": "https://likes-purposes-pas-shame.trycloudflare.com/sandbox/:match*"
+    }
+  ]
 }
