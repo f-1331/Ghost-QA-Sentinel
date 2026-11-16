@@ -18,7 +18,7 @@ async def verify_security():
     async with httpx.AsyncClient(timeout=10.0) as client:
         # Step 1: Test GET /api/security/audit
         print("\n[SEC-TEST 1/4] Probing GET /api/security/audit...")
-        resp = await client.get("http://127.0.0.1:8000/api/security/audit?target_url=http://localhost:8000/sandbox")
+        resp = await client.get("http://127.0.0.1:8001/api/security/audit?target_url=http://localhost:8001/sandbox")
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
         data = resp.json()
         print(f"  ✓ Target Domain: {data.get('domain')}")
@@ -31,8 +31,8 @@ async def verify_security():
         # Step 2: Test POST /api/security/audit
         print("\n[SEC-TEST 2/4] Probing POST /api/security/audit with JSON Payload...")
         post_resp = await client.post(
-            "http://127.0.0.1:8000/api/security/audit",
-            json={"target_url": "http://localhost:8000/sandbox"}
+            "http://127.0.0.1:8001/api/security/audit",
+            json={"target_url": "http://localhost:8001/sandbox"}
         )
         assert post_resp.status_code == 200, f"Expected 200, got {post_resp.status_code}"
         post_data = post_resp.json()
@@ -42,7 +42,7 @@ async def verify_security():
         # Step 3: Security Boundary & Protocol Validation (SSRF guard)
         print("\n[SEC-TEST 3/4] Testing SSRF Guard & Malicious Protocol Blocking...")
         malicious_resp = await client.post(
-            "http://127.0.0.1:8000/api/security/audit",
+            "http://127.0.0.1:8001/api/security/audit",
             json={"target_url": "file:///etc/passwd"}
         )
         mal_data = malicious_resp.json()

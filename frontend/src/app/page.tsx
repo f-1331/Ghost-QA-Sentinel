@@ -46,7 +46,7 @@ import { LiveDomMatrixVisualizer } from "../components/LiveDomMatrixVisualizer";
 import { cyberVoice } from "../components/VoiceSynthesizer";
 import { SecurityVulnerabilityRadar } from "../components/SecurityVulnerabilityRadar";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001";
 const WS_URL = BACKEND_URL.replace(/^http/, "ws");
 
 // Built-in Demo Incidents for high-fidelity demonstration

@@ -6,8 +6,8 @@ echo =====================================================================
 echo    🛡️ GHOST-QA SENTINEL - AUTONOMOUS AI QUALITY ASSURANCE SUITE
 echo =====================================================================
 echo.
-echo [1/3] Starting FastAPI Core Engine (Port 8000)...
-start "Ghost-QA Backend (Port 8000)" cmd /c "cd /d "%~dp0" && set PYTHONPATH=%~dp0 && .\venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+echo [1/3] Starting FastAPI Core Engine (Port 8001)...
+start "Ghost-QA Backend (Port 8001)" cmd /c "cd /d "%~dp0" && set PYTHONPATH=%~dp0 && .\venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8001"
 
 echo [2/3] Starting Next.js Cyberpunk Dashboard (Port 3000)...
 start "Ghost-QA Frontend (Port 3000)" cmd /c "cd /d "%~dp0\frontend" && npm run dev"
@@ -18,8 +18,8 @@ timeout /t 4 /nobreak >nul
 echo.
 echo ✅ ALL SYSTEMS OPERATIONAL!
 echo    - Dashboard: http://localhost:3000
-echo    - Backend:   http://localhost:8000/api/health
-echo    - Sandbox:   http://localhost:8000/sandbox
+echo    - Backend:   http://localhost:8001/api/health
+echo    - Sandbox:   http://localhost:8001/sandbox
 echo.
 echo Opening browser...
 start http://localhost:3000
