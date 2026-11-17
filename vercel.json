@@ -4,19 +4,19 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://podcast-francis-outer-preventing.trycloudflare.com/api/:match*"
+      "destination": "https://dosage-million-intelligent-assessing.trycloudflare.com/api/:match*"
     },
     {
       "source": "/ws/:match*",
-      "destination": "https://podcast-francis-outer-preventing.trycloudflare.com/ws/:match*"
+      "destination": "https://dosage-million-intelligent-assessing.trycloudflare.com/ws/:match*"
     },
     {
       "source": "/screenshots/:match*",
-      "destination": "https://podcast-francis-outer-preventing.trycloudflare.com/screenshots/:match*"
+      "destination": "https://dosage-million-intelligent-assessing.trycloudflare.com/screenshots/:match*"
     },
     {
       "source": "/sandbox/:match*",
-      "destination": "https://podcast-francis-outer-preventing.trycloudflare.com/sandbox/:match*"
+      "destination": "https://dosage-million-intelligent-assessing.trycloudflare.com/sandbox/:match*"
     }
   ]
 }
