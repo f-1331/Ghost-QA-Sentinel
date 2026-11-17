@@ -23,6 +23,9 @@ logging.basicConfig(
 logger = logging.getLogger("unified_server")
 
 BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 LOCAL_PORT = 8001
 LOCAL_URL = f"http://127.0.0.1:{LOCAL_PORT}"
 CF_BINARY = BASE_DIR / "cloudflared.exe"
@@ -147,6 +150,8 @@ async def main_unified():
         await server.serve()
     except (KeyboardInterrupt, SystemExit):
         logger.info("Shutting down unified server...")
+    except Exception as e:
+        logger.error(f"Fatal error in unified server: {e}", exc_info=True)
     finally:
         if cf_proc and cf_proc.poll() is None:
             cf_proc.terminate()
