@@ -4,19 +4,19 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://entry-canberra-cms-sip.trycloudflare.com/api/:match*"
+      "destination": "https://single-distinct-spirit-baseball.trycloudflare.com/api/:match*"
     },
     {
       "source": "/ws/:match*",
-      "destination": "https://entry-canberra-cms-sip.trycloudflare.com/ws/:match*"
+      "destination": "https://single-distinct-spirit-baseball.trycloudflare.com/ws/:match*"
     },
     {
       "source": "/screenshots/:match*",
-      "destination": "https://entry-canberra-cms-sip.trycloudflare.com/screenshots/:match*"
+      "destination": "https://single-distinct-spirit-baseball.trycloudflare.com/screenshots/:match*"
     },
     {
       "source": "/sandbox/:match*",
-      "destination": "https://entry-canberra-cms-sip.trycloudflare.com/sandbox/:match*"
+      "destination": "https://single-distinct-spirit-baseball.trycloudflare.com/sandbox/:match*"
     }
   ]
 }
