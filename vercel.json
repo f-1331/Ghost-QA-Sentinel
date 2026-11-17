@@ -4,19 +4,19 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://continued-announcement-bottle-imports.trycloudflare.com/api/:match*"
+      "destination": "https://hiv-begin-webster-experiment.trycloudflare.com/api/:match*"
     },
     {
       "source": "/ws/:match*",
-      "destination": "https://continued-announcement-bottle-imports.trycloudflare.com/ws/:match*"
+      "destination": "https://hiv-begin-webster-experiment.trycloudflare.com/ws/:match*"
     },
     {
       "source": "/screenshots/:match*",
-      "destination": "https://continued-announcement-bottle-imports.trycloudflare.com/screenshots/:match*"
+      "destination": "https://hiv-begin-webster-experiment.trycloudflare.com/screenshots/:match*"
     },
     {
       "source": "/sandbox/:match*",
-      "destination": "https://continued-announcement-bottle-imports.trycloudflare.com/sandbox/:match*"
+      "destination": "https://hiv-begin-webster-experiment.trycloudflare.com/sandbox/:match*"
     }
   ]
 }
