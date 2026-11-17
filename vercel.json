@@ -4,19 +4,19 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://shannon-celebrity-friends-lawn.trycloudflare.com/api/:match*"
+      "destination": "https://continued-announcement-bottle-imports.trycloudflare.com/api/:match*"
     },
     {
       "source": "/ws/:match*",
-      "destination": "https://shannon-celebrity-friends-lawn.trycloudflare.com/ws/:match*"
+      "destination": "https://continued-announcement-bottle-imports.trycloudflare.com/ws/:match*"
     },
     {
       "source": "/screenshots/:match*",
-      "destination": "https://shannon-celebrity-friends-lawn.trycloudflare.com/screenshots/:match*"
+      "destination": "https://continued-announcement-bottle-imports.trycloudflare.com/screenshots/:match*"
     },
     {
       "source": "/sandbox/:match*",
-      "destination": "https://shannon-celebrity-friends-lawn.trycloudflare.com/sandbox/:match*"
+      "destination": "https://continued-announcement-bottle-imports.trycloudflare.com/sandbox/:match*"
     }
   ]
 }
