@@ -1,14 +1,19 @@
 # tunnel_runner.py
 # High-Availability Cloudflare Quick Tunnel Manager for Ghost-QA Sentinel
 
-import asyncio
 import logging
 import os
 import re
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
+
+# Configure UTF-8 stdout on Windows
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,7 +28,7 @@ LOCAL_PORT = 8001
 LOCAL_URL = f"http://127.0.0.1:{LOCAL_PORT}"
 
 
-def get_quick_tunnel(timeout_seconds: int = 30):
+def get_quick_tunnel(timeout_seconds: int = 35):
     """
     Spawns cloudflared quick tunnel pointing to Ghost-QA Sentinel (port 8001)
     and captures the assigned trycloudflare.com URL.
@@ -92,6 +97,17 @@ def get_saved_tunnel_url() -> str:
     return ""
 
 
+def drain_pipe(proc):
+    """Continuously drain stdout in background thread to prevent pipe buffer overflow."""
+    try:
+        while proc.poll() is None:
+            line = proc.stdout.readline()
+            if not line:
+                break
+    except Exception:
+        pass
+
+
 def run_persistent_tunnel():
     """Runs Cloudflare tunnel persistently, restarting on unexpected exits."""
     logger.info("=" * 65)
@@ -109,15 +125,20 @@ def run_persistent_tunnel():
 
         print(f"\n[ACTIVE_TUNNEL] {url}\n", flush=True)
 
+        # Auto-update vercel.json if Render is down
         try:
-            # Keep monitoring process
-            while proc.poll() is None:
-                line = proc.stdout.readline()
-                if line and ("ERR" in line or "error" in line.lower()):
-                    logger.debug(line.strip())
-                time.sleep(0.5)
+            from render_failback_watchdog import update_vercel_route
+            update_vercel_route(url, "TUNNEL")
+        except Exception as e:
+            logger.warning(f"Could not auto-sync vercel.json: {e}")
 
-            logger.warning("Tunnel process exited unexpectedly. Restarting in 3 seconds...")
+        # Start pipe drain thread
+        drain_thread = threading.Thread(target=drain_pipe, args=(proc,), daemon=True)
+        drain_thread.start()
+
+        try:
+            proc.wait()
+            logger.warning("Tunnel process exited. Restarting in 3 seconds...")
             time.sleep(3)
         except KeyboardInterrupt:
             logger.info("Stopping Cloudflare tunnel...")
