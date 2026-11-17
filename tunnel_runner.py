@@ -116,13 +116,16 @@ def run_persistent_tunnel():
     logger.info(f"   Target URL:         {LOCAL_URL}")
     logger.info("=" * 65)
 
+    retry_delay = 5
     while True:
         proc, url = get_quick_tunnel()
         if not proc or not url:
-            logger.warning("Tunnel start failed, retrying in 5 seconds...")
-            time.sleep(5)
+            logger.warning(f"Tunnel start failed, retrying in {retry_delay} seconds...")
+            time.sleep(retry_delay)
+            retry_delay = min(retry_delay * 2, 60)
             continue
 
+        retry_delay = 5
         print(f"\n[ACTIVE_TUNNEL] {url}\n", flush=True)
 
         # Auto-update vercel.json if Render is down
