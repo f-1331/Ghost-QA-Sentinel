@@ -4,19 +4,19 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://heart-recreational-leaving-conferences.trycloudflare.com/api/:match*"
+      "destination": "https://petite-butter-biz-roommates.trycloudflare.com/api/:match*"
     },
     {
       "source": "/ws/:match*",
-      "destination": "https://heart-recreational-leaving-conferences.trycloudflare.com/ws/:match*"
+      "destination": "https://petite-butter-biz-roommates.trycloudflare.com/ws/:match*"
     },
     {
       "source": "/screenshots/:match*",
-      "destination": "https://heart-recreational-leaving-conferences.trycloudflare.com/screenshots/:match*"
+      "destination": "https://petite-butter-biz-roommates.trycloudflare.com/screenshots/:match*"
     },
     {
       "source": "/sandbox/:match*",
-      "destination": "https://heart-recreational-leaving-conferences.trycloudflare.com/sandbox/:match*"
+      "destination": "https://petite-butter-biz-roommates.trycloudflare.com/sandbox/:match*"
     }
   ]
 }
