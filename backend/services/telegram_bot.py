@@ -84,11 +84,11 @@ class TelegramSentinelBot:
                 dashboard_url = f"{settings.FRONTEND_URL}/incident/{incident_id}"
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[
                     [
-                        InlineKeyboardButton(text="✅ Approve & Create PR", callback_data=f"pr:{incident_id}"),
+                        InlineKeyboardButton(text="✅ Ruxsat berish (Approve PR)", callback_data=f"pr:{incident_id}"),
                     ],
                     [
                         InlineKeyboardButton(text="🔍 View in Dashboard", url=dashboard_url),
-                        InlineKeyboardButton(text="❌ Ignore", callback_data=f"ignore:{incident_id}")
+                        InlineKeyboardButton(text="❌ Bekor qilish (Ignore)", callback_data=f"ignore:{incident_id}")
                     ]
                 ])
 

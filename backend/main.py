@@ -590,6 +590,77 @@ def get_scan(scan_id: str, db: Session = Depends(get_db)):
         "logs": logs
     }
 
+DEMO_INCIDENTS_SEED = {
+    "inc-checkout-001": {
+        "bug_type": "PAGE_ERROR",
+        "severity": "CRITICAL",
+        "message": "Cannot read properties of undefined (reading 'pricing')",
+        "target_file": "demo-broken-app/app.js",
+        "original_code": "  const grandTotal = cart.checkoutDetails.pricing.calculateGrandTotal();",
+        "fixed_code": "  // Ghost-QA Autonomous Fix: Added null-safe fallback calculating total from cart items\n  const grandTotal = (cart.checkoutDetails?.pricing?.calculateGrandTotal)\n    ? cart.checkoutDetails.pricing.calculateGrandTotal()\n    : cart.items.reduce((sum, item) => sum + item.price, 0).toFixed(2);",
+        "root_cause_en": "Uncaught TypeError: cart.checkoutDetails is undefined when clicking the checkout button.",
+        "root_cause_uz": "TypeError: cart.checkoutDetails obyekti topilmaganligi sababli dastur quladi."
+    },
+    "inc-sync-002": {
+        "bug_type": "NETWORK_FAIL",
+        "severity": "HIGH",
+        "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "target_file": "demo-broken-app/app.js",
+        "original_code": "  const response = await fetch('/api/broken/inventory-sync');\n  const data = await response.json();",
+        "fixed_code": "  // Ghost-QA Autonomous Fix: Resilient fallback to cached snapshot on HTTP 500\n  let data;\n  try {\n    const response = await fetch('/api/broken/inventory-sync');\n    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);\n    data = await response.json();\n  } catch (netErr) {\n    data = { status: 'DEGRADED', items: 24, cached: true };\n    logToConsole('⚠️ Loaded 24 items from cached snapshot.', 'info');\n  }",
+        "root_cause_en": "Unhandled HTTP 500 internal server failure when triggering inventory synchronization.",
+        "root_cause_uz": "Server 500 xatosi berganda tarmoq so'rovi uzilib qolgan."
+    },
+    "inc-overlay-003": {
+        "bug_type": "LAYOUT_BLOCK",
+        "severity": "HIGH",
+        "message": "Pointer events intercepted by transparent blocker overlay on button#claim-voucher-btn",
+        "target_file": "demo-broken-app/style.css",
+        "original_code": "  cursor: not-allowed;\n  pointer-events: auto;",
+        "fixed_code": "  /* Ghost-QA Autonomous Fix: Permitted pointer-events to pass through transparent obstruction */\n  cursor: default;\n  pointer-events: none;",
+        "root_cause_en": "The element #ghost-blocker-overlay intercepts mouse clicks.",
+        "root_cause_uz": "#ghost-blocker-overlay elementi tugma ustini to'sib turgani sababli bosish bloklangan."
+    },
+    "inc-tax-004": {
+        "bug_type": "CONSOLE_ERROR",
+        "severity": "MEDIUM",
+        "message": "Cannot read property 'rate' of null in calculateSalesTax()",
+        "target_file": "demo-broken-app/app.js",
+        "original_code": "function calculateSalesTax(regionConfig) {\n  return regionConfig.rate * 100;\n}",
+        "fixed_code": "// Ghost-QA Autonomous Fix: Guard against null regionConfig\nfunction calculateSalesTax(regionConfig) {\n  const rate = (regionConfig && typeof regionConfig.rate === 'number') ? regionConfig.rate : 0.085;\n  return rate * 100;\n}",
+        "root_cause_en": "Null reference error when calculating region tax.",
+        "root_cause_uz": "Soliq hisoblashda null qiymat uzatilgan."
+    }
+}
+
+def resolve_or_seed_incident(incident_id: str, db: Session) -> Optional[Incident]:
+    inc = db.query(Incident).filter(Incident.id == incident_id).first()
+    if inc:
+        return inc
+    if incident_id in DEMO_INCIDENTS_SEED:
+        demo = DEMO_INCIDENTS_SEED[incident_id]
+        inc = Incident(
+            id=incident_id,
+            scan_id="demo-seed-scan",
+            bug_type=demo["bug_type"],
+            severity=demo["severity"],
+            message=demo["message"],
+            target_file=demo["target_file"],
+            original_code=demo["original_code"],
+            fixed_code=demo["fixed_code"],
+            root_cause_en=demo["root_cause_en"],
+            root_cause_uz=demo["root_cause_uz"],
+            status="OPEN"
+        )
+        try:
+            db.add(inc)
+            db.commit()
+            db.refresh(inc)
+        except Exception:
+            db.rollback()
+        return inc
+    return None
+
 @app.get("/api/incidents")
 def list_incidents(db: Session = Depends(get_db)):
     incidents = db.query(Incident).order_by(Incident.created_at.desc()).limit(50).all()
@@ -597,14 +668,14 @@ def list_incidents(db: Session = Depends(get_db)):
 
 @app.get("/api/incidents/{incident_id}")
 def get_incident(incident_id: str, db: Session = Depends(get_db)):
-    inc = db.query(Incident).filter(Incident.id == incident_id).first()
+    inc = resolve_or_seed_incident(incident_id, db)
     if not inc:
         raise HTTPException(status_code=404, detail="Incident not found")
     return inc
 
 @app.post("/api/incidents/{incident_id}/create-pr")
 async def create_pr(incident_id: str, db: Session = Depends(get_db)):
-    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    incident = resolve_or_seed_incident(incident_id, db)
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
 
@@ -631,7 +702,7 @@ async def create_pr(incident_id: str, db: Session = Depends(get_db)):
 
 @app.post("/api/incidents/{incident_id}/apply-local-patch")
 def apply_local_patch(incident_id: str, db: Session = Depends(get_db)):
-    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    incident = resolve_or_seed_incident(incident_id, db)
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
 
