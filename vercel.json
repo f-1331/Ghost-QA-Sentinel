@@ -4,19 +4,19 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://petite-butter-biz-roommates.trycloudflare.com/api/:match*"
+      "destination": "https://pin-analyses-nottingham-funky.trycloudflare.com/api/:match*"
     },
     {
       "source": "/ws/:match*",
-      "destination": "https://petite-butter-biz-roommates.trycloudflare.com/ws/:match*"
+      "destination": "https://pin-analyses-nottingham-funky.trycloudflare.com/ws/:match*"
     },
     {
       "source": "/screenshots/:match*",
-      "destination": "https://petite-butter-biz-roommates.trycloudflare.com/screenshots/:match*"
+      "destination": "https://pin-analyses-nottingham-funky.trycloudflare.com/screenshots/:match*"
     },
     {
       "source": "/sandbox/:match*",
-      "destination": "https://petite-butter-biz-roommates.trycloudflare.com/sandbox/:match*"
+      "destination": "https://pin-analyses-nottingham-funky.trycloudflare.com/sandbox/:match*"
     }
   ]
 }
