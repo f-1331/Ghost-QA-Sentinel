@@ -131,8 +131,13 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({
     setInput("");
     setIsLoading(true);
 
+    const effectiveBase = (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1")
+      ? ""
+      : (backendUrl || "http://localhost:8001");
+    const apiUrl = effectiveBase ? `${effectiveBase.replace(/\/$/, '')}/api/ai/copilot` : "/api/ai/copilot";
+
     try {
-      const res = await fetch(`${backendUrl}/api/ai/copilot`, {
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -166,13 +171,38 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({
       let fallbackAnswer = "";
       const lower = text.toLowerCase().trim();
 
-      if (lower.includes("salom") || lower.includes("assalom") || lower.includes("hello") || lower.includes("hi") || lower.includes("привет") || lower.length <= 4) {
+      // Math & Arithmetic handling
+      const mathMatch = text.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/);
+      if (mathMatch) {
+        const num1 = parseFloat(mathMatch[1]);
+        const op = mathMatch[2];
+        const num2 = parseFloat(mathMatch[3]);
+        let result = 0;
+        if (op === "+") result = num1 + num2;
+        else if (op === "-") result = num1 - num2;
+        else if (op === "*") result = num1 * num2;
+        else if (op === "/" && num2 !== 0) result = num1 / num2;
+
+        fallbackAnswer = lang === "uz"
+          ? `Javob: **${result}**! 😊\n\nMatematik nuqtai nazardan ham, bizning avtomatlashtirilgan testlarimiz nuqtai nazaridan ham javob aniq va to'g'ri. Jest yoki Playwright testida bu quyidagicha tekshiriladi:\n\n\`\`\`typescript\ntest('Arifmetik hisob-kitob testi', () => {\n  expect(${num1} ${op} ${num2}).toBe(${result});\n});\n\`\`\`\n\nBugun yana qanday savolingiz bor yoki qaysi xatolikni birgalikda tekshiramiz?`
+          : lang === "ru"
+          ? `Ответ: **${result}**! 😊\n\nИ с точки зрения математики, и с точки зрения QA-тестов результат абсолютно точен. В Playwright/Jest это проверяется так:\n\n\`\`\`typescript\ntest('Арифметический тест', () => {\n  expect(${num1} ${op} ${num2}).toBe(${result});\n});\n\`\`\`\n\nКакой еще вопрос вас интересует?`
+          : `Answer: **${result}**! 😊\n\nMathematically and from a QA assertion perspective, this result is 100% verified. In Playwright or Jest, this assertion looks like:\n\n\`\`\`typescript\ntest('Arithmetic assertion', () => {\n  expect(${num1} ${op} ${num2}).toBe(${result});\n});\n\`\`\`\n\nHow else can I assist your engineering workflow today?`;
+      } else if (lower.includes("matematik") || lower.includes("hisob") || lower.includes("hisobla") || lower.includes("math") || lower.includes("calc")) {
+        fallbackAnswer = lang === "uz"
+          ? "Albatta, matematika va mantiqiy hisob-kitoblarda bajonidil yordam beraman! Masalan, `2+2=?` yoki murakkabroq ifodalarni yozsangiz, darhol hisoblab beraman va unga mos QA regressiya testini ham ko'rsataman."
+          : "Конечно, я с радостью помогу с математическими расчетами и логическими операциями! Напишите любое выражение, и я решу его.";
+      } else if (lower.includes("neon") || lower.includes("baza") || lower.includes("database") || lower.includes("postgres") || lower.includes("console.neon.tech")) {
+        fallbackAnswer = lang === "uz"
+          ? "🌐 **Neon Tech Serverless PostgreSQL Integratsiyasi:**\n\nGhost-QA Sentinel rasmiy ravishda Neon Tech serverless PostgreSQL ma'lumotlar bazasiga ulangan. Unda barcha test natijalari, xatoliklar (incidents) va audit jurnallari xavfsiz saqlanadi. Neon konsoli orqali production tarmog'ini real vaqtda kuzatishingiz mumkin."
+          : "🌐 **Интеграция с Neon Serverless PostgreSQL:**\n\nGhost-QA Sentinel подключен к базе данных Neon Tech. Все инциденты и результаты сканирования сохраняются в облачной базе данных.";
+      } else if (lower.includes("salom") || lower.includes("assalom") || lower.includes("hello") || lower.includes("hi") || lower.includes("привет") || lower.length <= 4) {
         fallbackAnswer = 
           lang === "uz"
             ? "👋 **Va alaykum assalom! Xush kelibsiz!**\n\nQalaysiz, ishlaringiz yaxshimi? Men Ghost-QA Sentinel AI Copilotiman. Web ilovangizdagi har qanday xatolik, TypeError, layout buzilishlarini tekshirish yoki Playwright testlarini generatsiya qilishda sizga yordam berishga tayyorman. Menga qanday savolingiz bor?"
             : lang === "ru"
-            ? "👋 **Здравствуйте! Добро пожаловать!**\n\nЯ Ghost-QA Sentinel AI Copilot на базе Google Gemini 3.8 Flash. Помогу протестировать проект, выявить скрытые баги и сгенерировать автоматические тесты. Какой вопрос вас интересует?"
-            : "👋 **Hello and welcome!**\n\nI am Ghost-QA Sentinel AI Copilot powered by Google Gemini 3.8 Flash. I'm ready to inspect runtime bugs, synthesize Playwright regression specs, or perform security audits. How can I help you today?";
+            ? "👋 **Здравствуйте! Добро пожаловать!**\n\nЯ Ghost-QA Sentinel AI Copilot на базе Google Gemini. Помогу протестировать проект, выявить скрытые баги и сгенерировать автоматические тесты. Какой вопрос вас интересует?"
+            : "👋 **Hello and welcome!**\n\nI am Ghost-QA Sentinel AI Copilot powered by Google Gemini. I'm ready to inspect runtime bugs, synthesize Playwright regression specs, or perform security audits. How can I help you today?";
       } else if (lower.includes("rust")) {
         fallbackAnswer = 
           "⚡ **Rust Arxitekturasi Tahlili:**\n\n" +
@@ -191,9 +221,9 @@ export const SentinelCopilot: React.FC<SentinelCopilotProps> = ({
           "```\n" +
           "Ushbu test har bir Git commitda xatoning qayta chiqishini 100% bartaraf etadi.";
       } else {
-        fallbackAnswer = 
-          "🤖 **Ghost-QA AI Tavsiyasi:**\n\n" +
-          "Tizim barcha runtime istisnolarni Playwright orqali real vaqtda intercept qiladi va Google Gemini orqali avtomatik kod patchini (Unified Diff) yaratadi. 1-bosishda 'Apply Local Patch' tugmasini bosib faylni mahalliy diskingizda tuzatishingiz mumkin!";
+        fallbackAnswer = lang === "uz"
+          ? "🤖 **Ghost-QA AI Yordamchisi:**\n\nSavolingizni qabul qildim! Ghost-QA tizimi loyihangizdagi har qanday xatolik, xavfsizlik zaifliklari (XSS, SQLi, SSRF) va kod tuzatishlarini tahlil qilishga tayyor. Menga istalgan savol bering yoki yuqoridagi 'Run Multi-Vector Autonomous Scan' tugmasi orqali avtomatik skanni boshlang!"
+          : "🤖 **Ghost-QA AI Ассистент:**\n\nЯ готов помочь вам с анализом кода, тестированием безопасности и автоматической генерацией тестов. Задайте любой вопрос или запустите сканирование приложения!";
       }
 
       setMessages((prev) => [

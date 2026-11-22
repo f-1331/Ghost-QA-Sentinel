@@ -46,8 +46,28 @@ import { LiveDomMatrixVisualizer } from "../components/LiveDomMatrixVisualizer";
 import { cyberVoice } from "../components/VoiceSynthesizer";
 import { SecurityVulnerabilityRadar } from "../components/SecurityVulnerabilityRadar";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001";
-const WS_URL = BACKEND_URL.replace(/^http/, "ws");
+const getBackendUrl = (): string => {
+  if (typeof window !== "undefined") {
+    if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      return "";
+    }
+  }
+  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001";
+};
+
+const getWsUrl = (scanId: string): string => {
+  if (typeof window !== "undefined") {
+    if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+      return `${proto}//${window.location.host}/ws/scan/${scanId}`;
+    }
+  }
+  const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001";
+  return `${base.replace(/^http/, "ws")}/ws/scan/${scanId}`;
+};
+
+const BACKEND_URL = getBackendUrl();
+const WS_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001").replace(/^http/, "ws");
 
 // Built-in Demo Incidents for high-fidelity demonstration
 const DEFAULT_DEMO_INCIDENTS: IncidentData[] = [
@@ -155,6 +175,9 @@ export default function Dashboard() {
   // Load preferences from localStorage on mount
   useEffect(() => {
     try {
+      if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+        setTargetUrl(`${window.location.origin}/sandbox`);
+      }
       const savedLang = localStorage.getItem("ghostqa_lang") as Language;
       if (savedLang && (savedLang === "uz" || savedLang === "en" || savedLang === "ru")) {
         setLang(savedLang);
@@ -216,7 +239,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchHealth = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/health`);
+        const res = await fetch(`${getBackendUrl()}/api/health`);
         if (res.ok) {
           const data = await res.json();
           setSystemHealth(data);
@@ -234,7 +257,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!currentScanId) return;
 
-    const ws = new WebSocket(`${WS_URL}/ws/scan/${currentScanId}`);
+    const ws = new WebSocket(getWsUrl(currentScanId));
     wsRef.current = ws;
 
     // 45s absolute safety cap to ensure UI never freezes
@@ -519,7 +542,7 @@ export default function Dashboard() {
 
     // Check if target points to local backend or remote
     try {
-      const response = await fetch(`${BACKEND_URL}/api/scans/start`, {
+      const response = await fetch(`${getBackendUrl()}/api/scans/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -631,7 +654,7 @@ export default function Dashboard() {
   // Apply Local Patch
   const handleApplyPatch = async (incidentId: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/incidents/${incidentId}/apply-local-patch`, {
+      const response = await fetch(`${getBackendUrl()}/api/incidents/${incidentId}/apply-local-patch`, {
         method: "POST",
       });
       if (response.ok) {
@@ -654,7 +677,7 @@ export default function Dashboard() {
   // Create GitHub PR
   const handleCreatePR = async (incidentId: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/incidents/${incidentId}/create-pr`, {
+      const response = await fetch(`${getBackendUrl()}/api/incidents/${incidentId}/create-pr`, {
         method: "POST",
       });
       if (response.ok) {
@@ -698,7 +721,7 @@ export default function Dashboard() {
   const handleResetSandbox = async () => {
     soundFX.playClick();
     try {
-      await fetch(`${BACKEND_URL}/api/sandbox/reset`, { method: "POST" });
+      await fetch(`${getBackendUrl()}/api/sandbox/reset`, { method: "POST" });
     } catch (e) {}
     setIncidents(DEFAULT_DEMO_INCIDENTS.map((inc) => ({ ...inc, status: "HEALING" })));
     setLogs((prev) => [
@@ -933,7 +956,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <span>Quick Presets:</span>
               <button
-                onClick={() => setTargetUrl(`${BACKEND_URL}/sandbox`)}
+                onClick={() => setTargetUrl(`${getBackendUrl()}/sandbox`)}
                 className="px-2.5 py-1 rounded bg-[#080d18] hover:bg-sentinel-border text-sentinel-cyan border border-sentinel-border transition-all"
               >
                 {t.scanBtnQuickSandbox} (4 Bugs)
@@ -998,7 +1021,7 @@ export default function Dashboard() {
         <SecurityVulnerabilityRadar
           targetUrl={targetUrl}
           lang={lang}
-          backendUrl={BACKEND_URL}
+          backendUrl={getBackendUrl()}
         />
 
         {/* Live Terminal Telemetry Output */}
@@ -1086,7 +1109,7 @@ export default function Dashboard() {
                 onApplyPatch={handleApplyPatch}
                 onCreatePR={handleCreatePR}
                 lang={lang}
-                backendUrl={BACKEND_URL}
+                backendUrl={getBackendUrl()}
               />
             ))
           )}
@@ -1145,7 +1168,7 @@ export default function Dashboard() {
       <SandboxModal
         isOpen={isSandboxModalOpen}
         onClose={() => setIsSandboxModalOpen(false)}
-        backendUrl={BACKEND_URL}
+        backendUrl={getBackendUrl()}
       />
 
       {/* CI/CD Integration Modal */}
@@ -1157,7 +1180,7 @@ export default function Dashboard() {
 
       {/* Floating Sentinel AI QA Copilot (Mobile Optimized with Hide & Navbar Launcher) */}
       <SentinelCopilot
-        backendUrl={BACKEND_URL}
+        backendUrl={getBackendUrl()}
         lang={lang}
         isOpen={isCopilotOpen}
         onToggleOpen={setIsCopilotOpen}
@@ -1168,7 +1191,7 @@ export default function Dashboard() {
         isOpen={isAttackbenchModalOpen}
         onClose={() => setIsAttackbenchModalOpen(false)}
         lang={lang}
-        backendUrl={BACKEND_URL}
+        backendUrl={getBackendUrl()}
       />
 
       {/* First-visit & Interactive Welcome Language Selector Modal */}

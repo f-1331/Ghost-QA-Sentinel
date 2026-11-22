@@ -63,7 +63,7 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
   onApplyPatch,
   onCreatePR,
   lang = "uz",
-  backendUrl = "http://localhost:8000"
+  backendUrl = ""
 }) => {
   const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const [showTestSpec, setShowTestSpec] = useState(false);
